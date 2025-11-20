@@ -1,8 +1,10 @@
 // app/page.tsx
+import HeroVideo from "@/components/HeroVideo";
 
 export default function Home() {
   return (
     <div className="space-y-10">
+      <HeroVideo />
       {/* Hero 区：大标题，强调只卖轮毂 */}
       <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-10 text-white md:px-10 md:py-14">
         <div className="max-w-2xl space-y-4">

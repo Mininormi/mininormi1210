@@ -20,9 +20,8 @@ export default function RootLayout({
       <body className="bg-white text-slate-900">
         <div className="flex min-h-screen flex-col">
           <Header />
-          <HeroVideo />
           {/* 中间内容区域 */}
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+          <main className="flex-1">
             {children}
           </main>
 
