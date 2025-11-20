@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-Hans">
-      <body className="relative bg-black overflow-x-hidden">
+      <body className="relative bg-white overflow-x-hidden">
         <HeroVideo />
         <div className="relative z-10 flex min-h-screen flex-col">
           <Header />
