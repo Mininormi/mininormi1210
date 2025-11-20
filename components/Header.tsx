@@ -8,7 +8,7 @@ export function Header() {
         {/* 左侧 Logo / 品牌名 */}
         <Link href="/" className="flex items-baseline gap-2">
           <span className="text-xl font-black tracking-tight">
-            EastGarage
+            Rimsurge
           </span>
           <span className="text-xs font-medium uppercase text-slate-500">
             东街车房

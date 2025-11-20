@@ -5,8 +5,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "EastGarage · 东街车房",
-  description: "EastGarage · 东街车房，专注 JDM / 欧系轮毂与改装配件的跨境电商站点。",
+  title: "Rimsurge · 东街车房",
+  description: "Rimsurge · 东街车房，专注 JDM / 欧系轮毂与改装配件的跨境电商站点。",
 };
 
 export default function RootLayout({
