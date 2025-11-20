@@ -29,7 +29,7 @@ echo  PUSH FINISHED
 echo =============================
 
 :: 获取最新 commit hash
-for /f "tokens=2" %%a in ('git rev-parse HEAD') do set lastcommit=%%a
+for /f %%a in ('git rev-parse HEAD') do set lastcommit=%%a
 
 set repo=https://github.com/Mininormi/rimsurge-frontend
 set commiturl=%repo%/commit/%lastcommit%
