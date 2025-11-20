@@ -4,8 +4,6 @@ import HeroVideo from "@/components/HeroVideo";
 export default function Home() {
   return (
     <>
-    <HeroVideo />
-
     {/* Hero 文案层 */}
     <section className="relative z-10 flex h-screen items-center px-8 md:px-16 text-white">
       <div className="space-y-4 max-w-xl">
