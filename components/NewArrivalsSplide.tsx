@@ -33,7 +33,7 @@ export default function NewArrivalsSplide() {
         ml-[-50vw] mr-[-50vw]
         w-screen
         bg-white
-        py-16
+        py-10
       "
     >
       {/* 标题：限制在中间宽度 */}
