@@ -21,18 +21,18 @@ export function Header() {
   const subTextColor = scrolled ? "text-slate-600" : "text-white/70";
 
   return (
-<header
-  className={`
+    <header
+      className={`
     fixed top-0 left-0 w-full z-50
     transition-colors duration-150
-    ${scrolled
-      ? "bg-white/95 backdrop-blur border-b border-gray-200 shadow-md"
-      : "bg-transparent border-b border-transparent shadow-none"
+    ${
+      scrolled
+        ? "bg-white/95 backdrop-blur border-b border-gray-200 shadow-md"
+        : "bg-transparent border-b border-transparent shadow-none"
     }
   `}
->
+    >
       <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between transition-all duration-300">
-
         {/* Logo 区域 */}
         <Link href="/" className="flex items-baseline gap-2">
           <span className={`text-xl font-black tracking-tight ${textColor}`}>
@@ -44,7 +44,9 @@ export function Header() {
         </Link>
 
         {/* 导航栏 */}
-        <nav className={`hidden gap-6 text-sm font-medium md:flex ${textColor}`}>
+        <nav
+          className={`hidden gap-6 text-sm font-medium md:flex ${textColor}`}
+        >
           <Link href="/aftermarket" className="hover:opacity-80">
             Aftermarket Wheels 改装轮毂
           </Link>
@@ -73,13 +75,16 @@ export function Header() {
             href="/aftermarket"
             className={`
               rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-300 
-              ${scrolled ? "bg-slate-900 text-white" : "bg-white/90 text-slate-900"}
+              ${
+                scrolled
+                  ? "bg-slate-900 text-white"
+                  : "bg-white/90 text-slate-900"
+              }
             `}
           >
             Shop Wheels
           </Link>
         </div>
-
       </div>
     </header>
   );

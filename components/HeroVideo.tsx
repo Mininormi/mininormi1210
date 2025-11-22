@@ -12,5 +12,5 @@ export default function HeroVideo() {
       />
       <div className="absolute inset-0 bg-black/40" />
     </div>
-  );
+  )
 }
