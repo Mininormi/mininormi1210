@@ -39,7 +39,7 @@ export default function NewArrivalsSplide() {
       {/* 标题：限制在中间宽度 */}
       <div className="mx-auto max-w-6xl px-4">
         <h2 className="mb-6 flex items-center gap-3 text-3xl font-medium">
-          <span className="h-8 w-1 rounded-full bg-blue-500" />
+          <span className="h-8 w-1 rounded-full bg-gray-900" />
           New Arrivals
         </h2>
       </div>

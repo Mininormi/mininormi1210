@@ -1,13 +1,23 @@
 // components/HeroSection.tsx
 import HeroVideo from './HeroVideo'
 import Image from 'next/image'
+import VehicleFitmentStrip from './VehicleFitmentStrip'
 
 export default function HeroSection() {
   return (
-    <section className="relative h-[520px] md:h-[680px] w-full overflow-hidden flex items-center">
+    <section
+      className="
+    relative w-full
+    min-h-[680px]
+    flex items-center
+    pb-40
+    md:min-h-[760px]
+    md:pb-48
+  "
+    >
+      {' '}
       {/* 背景视频 */}
       <HeroVideo />
-
       {/* 文案层 */}
       <div className="absolute left-0 right-0 top-[30%] mx-auto max-w-6xl px-4 select-none">
         <div className="space-y-4">
@@ -50,6 +60,19 @@ export default function HeroSection() {
 
             <span>A New Canadian Way to Upgrade — Same Quality, Smarter Costs.</span>
           </div>
+        </div>
+      </div>
+      {/* 车辆选择条：桌面端固定在底部一条，手机端自然排版 */}
+      <div className="pointer-events-auto w-full">
+        <div className="mx-auto hidden w-full md:block md:max-w-6xl md:px-4">
+          <div className="pointer-events-auto absolute inset-x-0 bottom-10">
+            <VehicleFitmentStrip />
+          </div>
+        </div>
+
+        {/* 手机端：不用 absolute，避免挡住按钮 */}
+        <div className="mt-10 md:hidden">
+          <VehicleFitmentStrip />
         </div>
       </div>
     </section>

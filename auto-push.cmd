@@ -34,10 +34,9 @@ for /f %%a in ('git rev-parse HEAD') do set lastcommit=%%a
 set repo=https://github.com/Mininormi/rimsurge-frontend
 set commiturl=%repo%/commit/%lastcommit%
 
-echo Latest commit:
+echo 这是最新 commit 你接下来的操作都要以这个commit为准:
 echo %commiturl%
-echo.
-echo Copy the above link and send it to ChatGPT.
+echo. 请看完并参照这个commit，不要再发以前的旧代码
 echo =============================
 
 pause
