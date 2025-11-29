@@ -1,20 +1,24 @@
-/*
- * \lib\prisma.ts
- */
-
 // lib/prisma.ts
 import { PrismaClient } from '@prisma/client'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient
 }
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    // log: ['query', 'error', 'warn'], // 调试需要可以打开
+function createPrismaClient() {
+  const adapter = new PrismaBetterSqlite3({
+    // 跟 .env 里的 DATABASE_URL 保持一致
+    url: process.env.DATABASE_URL || 'file:./prisma/dev.db',
   })
 
-if (!globalForPrisma.prisma) {
+  return new PrismaClient({
+    adapter,
+  })
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient()
+
+if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
 }

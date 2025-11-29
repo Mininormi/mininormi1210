@@ -1,9 +1,10 @@
 // \app\admin\brands\page.tsx
 
+// app/admin/brands/page.tsx
 'use client'
 
-import { List, useTable, EditButton, CreateButton } from '@refinedev/antd'
-import { Table } from 'antd'
+import { List, useTable, EditButton, CreateButton, DeleteButton } from '@refinedev/antd'
+import { Table, Space } from 'antd'
 
 export default function BrandListPage() {
   const { tableProps } = useTable({
@@ -18,7 +19,12 @@ export default function BrandListPage() {
         <Table.Column dataIndex="slug" title="Slug" />
         <Table.Column
           title="Actions"
-          render={(_, record: any) => <EditButton hideText recordItemId={record.id} />}
+          render={(_, record: any) => (
+            <Space>
+              <EditButton hideText size="small" recordItemId={record.id} />
+              <DeleteButton hideText size="small" recordItemId={record.id} />
+            </Space>
+          )}
         />
       </Table>
     </List>

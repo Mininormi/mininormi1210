@@ -24,9 +24,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           notificationProvider={notificationProvider}
           dataProvider={dataProvider('/api')}
           resources={[
-            { name: 'brands', list: '/admin/brands' },
-            { name: 'products', list: '/admin/products' },
-            { name: 'variants', list: '/admin/variants' },
+            {
+              name: 'brands',
+              list: '/admin/brands',
+              create: '/admin/brands/create',
+              edit: '/admin/brands/edit/:id',
+            },
+            {
+              name: 'products',
+              list: '/admin/products',
+            },
+            {
+              name: 'variants',
+              list: '/admin/variants',
+            },
           ]}
         >
           <ThemedLayout>{children}</ThemedLayout>
