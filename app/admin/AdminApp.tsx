@@ -31,10 +31,14 @@ export function AdminApp({ children }: { children: ReactNode }) {
             {
               name: 'products',
               list: '/admin/products',
+              create: '/admin/products/create',
+              edit: '/admin/products/edit/:id',
             },
             {
               name: 'variants',
               list: '/admin/variants',
+              create: '/admin/variants/create',
+              edit: '/admin/variants/edit/:id',
             },
           ]}
         >
