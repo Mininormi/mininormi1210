@@ -4,7 +4,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
-type MenuKey = 'vehicle' | 'aftermarket' | 'oem'
+type MenuKey = 'vehicle' | 'pcd' | 'brand'
 
 export default function HeaderHome() {
   const [scrolled, setScrolled] = useState(false)
@@ -62,7 +62,7 @@ export default function HeaderHome() {
     'rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 flex items-center gap-2'
   const buttonColor = scrolled ? 'bg-slate-900 text-white' : 'bg-white/92 text-slate-900'
 
-  // 方案 A：下拉主题跟随 header
+  // 下拉主题跟随 header
   const dropdownTheme = scrolled
     ? // 白底状态：浅色卡片
       'bg-white/98 text-slate-900 border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.16)]'
@@ -109,18 +109,18 @@ export default function HeaderHome() {
         'No more guessing offsets or test-fitting.',
       ],
     },
-    aftermarket: {
-      title: 'Aftermarket Performance',
+    pcd: {
+      title: 'By PCD Search',
       body: [
-        'Street, track and stance focused wheels with proper load ratings for Canadian roads.',
-        'Curated JDM & Euro-style fitments.',
+        'Already know your bolt pattern? Filter by PCD to see every wheel that physically bolts up.',
+        'Optionally limit by wheel diameter to match your target size.',
       ],
     },
-    oem: {
-      title: 'OEM Replacement',
+    brand: {
+      title: 'By Brand Search',
       body: [
-        'Factory-spec replacement wheels for lease returns, winter setups or curb damage.',
-        'Match OEM look without visiting the dealer.',
+        'Browse wheels by manufacturer when you already have a favourite brand in mind.',
+        'We only list authentic stock that is ready to ship to Canada with duties included.',
       ],
     },
   } as const
@@ -194,31 +194,31 @@ export default function HeaderHome() {
                       </div>
                     </button>
 
-                    {/* Aftermarket */}
+                    {/* By PCD */}
                     <button
                       type="button"
-                      onMouseEnter={() => setActiveItem('aftermarket')}
+                      onMouseEnter={() => setActiveItem('pcd')}
                       className={`w-full rounded-2xl px-4 py-3 text-left transition-colors ${
-                        activeItem === 'aftermarket' ? dropdownActiveBg : dropdownInactiveBg
+                        activeItem === 'pcd' ? dropdownActiveBg : dropdownInactiveBg
                       }`}
                     >
-                      <div className="text-sm font-semibold">Aftermarket Wheels</div>
+                      <div className="text-sm font-semibold">By PCD</div>
                       <div className={`mt-1 text-xs ${dropdownMutedText}`}>
-                        Performance & aesthetic focused
+                        Find wheels by bolt pattern
                       </div>
                     </button>
 
-                    {/* OEM */}
+                    {/* By Brand */}
                     <button
                       type="button"
-                      onMouseEnter={() => setActiveItem('oem')}
+                      onMouseEnter={() => setActiveItem('brand')}
                       className={`w-full rounded-2xl px-4 py-3 text-left transition-colors ${
-                        activeItem === 'oem' ? dropdownActiveBg : dropdownInactiveBg
+                        activeItem === 'brand' ? dropdownActiveBg : dropdownInactiveBg
                       }`}
                     >
-                      <div className="text-sm font-semibold">OEM Wheels</div>
+                      <div className="text-sm font-semibold">By Brand</div>
                       <div className={`mt-1 text-xs ${dropdownMutedText}`}>
-                        Original factory wheels
+                        Browse wheels by manufacturer
                       </div>
                     </button>
                   </div>
@@ -253,28 +253,28 @@ export default function HeaderHome() {
                             Start vehicle search →
                           </Link>
                         )}
-                        {activeItem === 'aftermarket' && (
+                        {activeItem === 'pcd' && (
                           <Link
-                            href="/aftermarket"
+                            href="/shop/by-pcd"
                             className="inline-flex items-center gap-1 text-sm font-semibold text-slate-900 underline underline-offset-4"
                             onClick={() => {
                               setMenuOpen(false)
                               setPinned(false)
                             }}
                           >
-                            Browse aftermarket wheels →
+                            Start PCD search →
                           </Link>
                         )}
-                        {activeItem === 'oem' && (
+                        {activeItem === 'brand' && (
                           <Link
-                            href="/oem"
+                            href="/shop/by-brand"
                             className="inline-flex items-center gap-1 text-sm font-semibold text-slate-900 underline underline-offset-4"
                             onClick={() => {
                               setMenuOpen(false)
                               setPinned(false)
                             }}
                           >
-                            View OEM replacements →
+                            Browse by brand →
                           </Link>
                         )}
                       </div>
