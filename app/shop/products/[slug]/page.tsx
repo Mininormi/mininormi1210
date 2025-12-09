@@ -1,5 +1,5 @@
 // \app\shop\products\[slug]\page.tsx
-
+// 本地修改
 export default function ProductDetailPage() {
   // 先写死一套 mock 数据，后面你再接真实 API
   const wheel = {
