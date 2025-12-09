@@ -2,13 +2,16 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, use } from 'react'
 import Link from 'next/link'
 
-export default function GalleryDetailPage({ params }: { params: { slug: string } }) {
+export default function GalleryDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  // 使用 React.use() 解包 Promise
+  const { slug } = use(params)
+  
   // Mock 数据 - 后续接入真实 API
   const galleryItem = {
-    id: params.slug,
+    id: slug,
     vehicle: {
       make: 'Alfa Romeo',
       model: 'Stelvio QV',
