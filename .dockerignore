@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node modules
+node_modules
+npm-debug.log
+yarn-error.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs
+
+# Runtime (FastAdmin)
+backend/admin/runtime/*
+!backend/admin/runtime/.gitkeep
+
+# Cache
+backend/admin/cache/*
+!backend/admin/cache/.gitkeep
+
+# Vendor (可选，如果需要重新安装依赖可以保留)
+# backend/admin/vendor
+
+# Frontend build
+frontend/.next
+frontend/dist
+frontend/build
+
