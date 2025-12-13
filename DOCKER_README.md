@@ -54,9 +54,6 @@ docker-compose exec php chmod -R 755 /var/www/html/runtime
 
 - **数据库主机**: `mysql`（容器内）或 `127.0.0.1`（宿主机）
 - **数据库端口**: `3306`
-- **数据库名**: `fastadmin`（或 `.env` 中配置的 `MYSQL_DATABASE`）
-- **用户名**: `fastadmin`（或 `.env` 中配置的 `MYSQL_PASSWORD`）
-- **密码**: `fastadmin123`（或 `.env` 中配置的 `MYSQL_PASSWORD`）
 
 ### Adminer 登录信息
 
@@ -64,13 +61,10 @@ docker-compose exec php chmod -R 755 /var/www/html/runtime
 
 - **系统**: MySQL
 - **服务器**: `mysql`（Docker 服务名）
-- **用户名**: `root` 或 `fastadmin`
-- **密码**: `root123456` 或 `fastadmin123`（根据 `.env` 配置）
-- **数据库**: `fastadmin`（或你创建的数据库名）
+- **用户名**: `mininormi`
+- **密码**: `a123123`
+- **数据库**: `rimsurge`
 
-**注意**: 
-- 使用 `root` 用户登录拥有所有权限（增删改查、表结构管理等）
-- 使用 `fastadmin` 用户登录权限受该用户权限限制
 
 ## 常用命令
 
