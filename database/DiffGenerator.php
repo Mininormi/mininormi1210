@@ -9,6 +9,7 @@ class DiffGenerator
 {
     private $schemaParser;
     private $databaseInspector;
+    private $typeValidator;
     private $dryRun;
     private $warnings;
     private $pendingDeletions; // 待删除的字段和表列表
@@ -20,6 +21,10 @@ class DiffGenerator
         $this->dryRun = $dryRun;
         $this->warnings = [];
         $this->pendingDeletions = [];
+        
+        // 初始化类型验证器
+        require_once __DIR__ . '/TypeValidator.php';
+        $this->typeValidator = new TypeValidator();
     }
     
     /**
@@ -69,6 +74,15 @@ class DiffGenerator
         
         // 生成字段定义
         foreach ($tableDef['columns'] as $colName => $colDef) {
+            // 验证字段定义
+            $validation = $this->typeValidator->validateColumn($tableName, $colName, $colDef);
+            if (!$validation['valid']) {
+                $this->warnings = array_merge($this->warnings, $validation['warnings']);
+                // 继续处理，但记录警告
+            } else {
+                $this->warnings = array_merge($this->warnings, $validation['warnings']);
+            }
+            
             $normalized = $this->schemaParser->normalizeColumn($colName, $colDef);
             $columns[] = $this->schemaParser->generateColumnSql($normalized);
             
@@ -129,6 +143,15 @@ class DiffGenerator
         // 新增字段
         foreach ($schemaColumns as $colName => $colDef) {
             if (!isset($dbColumns[$colName])) {
+                // 验证新字段
+                $validation = $this->typeValidator->validateColumn($tableName, $colName, $colDef);
+                if (!$validation['valid']) {
+                    $this->warnings = array_merge($this->warnings, $validation['warnings']);
+                    // 继续处理，但记录警告
+                } else {
+                    $this->warnings = array_merge($this->warnings, $validation['warnings']);
+                }
+                
                 $normalized = $this->schemaParser->normalizeColumn($colName, $colDef);
                 $colSql = $this->schemaParser->generateColumnSql($normalized);
                 
@@ -144,6 +167,15 @@ class DiffGenerator
                 $normalized = $this->schemaParser->normalizeColumn($colName, $colDef);
                 $dbCol = $dbColumns[$colName];
                 
+                // 验证字段变更
+                $validation = $this->typeValidator->validateColumn($tableName, $colName, $colDef, $dbCol);
+                if (!$validation['valid']) {
+                    $this->warnings = array_merge($this->warnings, $validation['warnings']);
+                    // 类型不兼容时，仍然生成 SQL，但记录严重警告
+                } else {
+                    $this->warnings = array_merge($this->warnings, $validation['warnings']);
+                }
+                
                 if ($this->isColumnChanged($normalized, $dbCol)) {
                     $colSql = $this->schemaParser->generateColumnSql($normalized);
                     $alterParts[] = "MODIFY COLUMN {$colSql}";
@@ -157,7 +189,7 @@ class DiffGenerator
                 $this->pendingDeletions[] = [
                     'deletion_type' => 'column',
                     'table' => $tableName,
-                    'column' => $colName,
+                    'column' => (string)$colName, // 确保列名是字符串类型
                     'column_type' => $colDef['type'] ?? 'unknown',
                     'comment' => $colDef['comment'] ?? '',
                 ];

@@ -147,8 +147,9 @@ database/
 ### 使用命令行
 
 ```bash
-# 查看表版本记录
-docker compose exec mysql mysql -u root -p -e "SELECT * FROM mini_table_versions ORDER BY last_synced_at DESC;"
+# 查看日志文件（按版本和日期）
+ls -la database/logs/*/
+cat database/logs/1.0.2/12-13.log
 ```
 
 ## 🔄 工作流程

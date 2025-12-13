@@ -35,6 +35,7 @@ require $adminPath . '/thinkphp/base.php';
 
 require_once __DIR__ . '/SchemaParser.php';
 require_once __DIR__ . '/DatabaseInspector.php';
+require_once __DIR__ . '/TypeValidator.php';
 require_once __DIR__ . '/DiffGenerator.php';
 
 use think\Db;
@@ -42,7 +43,6 @@ use think\Config;
 
 class DatabaseSync
 {
-    private $versionsTable;
     private $prefix;
     private $dryRun;
     private $logFile;
@@ -52,7 +52,6 @@ class DatabaseSync
         // 使用固定的 mini_ 前缀，标识由 sync 工具管理的表
         // fa_ 前缀保留给 FastAdmin 原生表
         $this->prefix = 'mini_';
-        $this->versionsTable = $this->prefix . 'table_versions';
         $this->dryRun = $dryRun;
         $this->logFile = null;
     }
@@ -144,9 +143,6 @@ class DatabaseSync
                 // 注意：return 后，日志会在 run() 方法的 finally 块中保存
                 return;
             }
-            
-            // 确保表版本记录表存在
-            $this->ensureVersionsTable();
             
             // #region agent log
             $logFile = (strpos(__DIR__, '/var/www') === 0) ? '/var/www/.cursor/debug.log' : dirname(__DIR__) . '/.cursor/debug.log';
@@ -265,9 +261,6 @@ class DatabaseSync
                     }
                 }
                 
-                // 更新表版本记录
-                $this->updateTableVersions($parser, $inspector);
-                
                 echo "========================================\n";
                 echo "同步完成！\n";
                 echo "成功: {$successCount} 个\n";
@@ -369,66 +362,6 @@ class DatabaseSync
             return !empty($result);
         } catch (\Exception $e) {
             return false;
-        }
-    }
-    
-    /**
-     * 确保表版本记录表存在
-     */
-    private function ensureVersionsTable()
-    {
-        if (!$this->tableExists($this->versionsTable)) {
-            $sql = "CREATE TABLE `{$this->versionsTable}` (
-                `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'ID',
-                `table_name` varchar(100) NOT NULL COMMENT '表名',
-                `schema_hash` varchar(64) NOT NULL COMMENT 'Schema 哈希值',
-                `last_synced_at` int(11) DEFAULT NULL COMMENT '最后同步时间',
-                PRIMARY KEY (`id`),
-                UNIQUE KEY `table_name` (`table_name`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='表版本记录';";
-            
-            if (!$this->dryRun) {
-                Db::execute($sql);
-            }
-            echo "✓ 创建表版本记录表: {$this->versionsTable}\n\n";
-        }
-    }
-    
-    /**
-     * 更新表版本记录
-     */
-    private function updateTableVersions($parser, $inspector)
-    {
-        if ($this->dryRun) {
-            return;
-        }
-        
-        $tables = $parser->getTableNames();
-        $now = time();
-        
-        foreach ($tables as $tableName) {
-            $hash = $inspector->getTableHash($tableName);
-            if ($hash) {
-                // 检查是否已存在记录
-                $exists = Db::query(
-                    "SELECT id FROM `{$this->versionsTable}` WHERE table_name = ?",
-                    [$tableName]
-                );
-                
-                if (!empty($exists)) {
-                    // 更新
-                    Db::execute(
-                        "UPDATE `{$this->versionsTable}` SET schema_hash = ?, last_synced_at = ? WHERE table_name = ?",
-                        [$hash, $now, $tableName]
-                    );
-                } else {
-                    // 插入
-                    Db::execute(
-                        "INSERT INTO `{$this->versionsTable}` (table_name, schema_hash, last_synced_at) VALUES (?, ?, ?)",
-                        [$tableName, $hash, $now]
-                    );
-                }
-            }
         }
     }
 }

@@ -51,14 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     ];
                 }
                 
-                // 获取表版本数量
+                // 表版本数量（已废弃，使用日志系统）
                 $versionCount = 0;
-                try {
-                    $result = Db::query("SELECT COUNT(*) as count FROM `mini_table_versions`");
-                    $versionCount = $result[0]['count'] ?? 0;
-                } catch (\Exception $e) {
-                    // 表可能不存在
-                }
                 
                 // 获取待删除字段列表
                 $pendingDeletionsFile = __DIR__ . '/pending_deletions.json';
@@ -86,12 +80,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 foreach ($pendingDeletions as $deletion) {
                     $deletionType = $deletion['deletion_type'] ?? 'column';
                     
+                    // #region agent log
+                    $logFile = (strpos(__DIR__, '/var/www') === 0) ? '/var/www/.cursor/debug.log' : dirname(__DIR__) . '/../.cursor/debug.log';
+                    @mkdir(dirname($logFile), 0755, true);
+                    $logData = [
+                        'sessionId' => 'debug-session',
+                        'runId' => 'run1',
+                        'hypothesisId' => 'E',
+                        'location' => 'sync-ui.php:80',
+                        'message' => 'Processing pending deletion',
+                        'data' => [
+                            'deletion' => $deletion,
+                            'deletion_type' => $deletionType,
+                            'column_type' => gettype($deletion['column'] ?? null)
+                        ],
+                        'timestamp' => time() * 1000
+                    ];
+                    @file_put_contents($logFile, json_encode($logData, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+                    // #endregion
+                    
                     if ($deletionType === 'column') {
                         // 字段类型
-                        $key = $deletion['table'] . '.' . $deletion['column'];
+                        // 确保 column 是字符串类型
+                        $columnName = (string)($deletion['column'] ?? '');
+                        $key = $deletion['table'] . '.' . $columnName;
+                        
+                        // #region agent log
+                        $logFile = (strpos(__DIR__, '/var/www') === 0) ? '/var/www/.cursor/debug.log' : dirname(__DIR__) . '/../.cursor/debug.log';
+                        $logData = [
+                            'sessionId' => 'debug-session',
+                            'runId' => 'run1',
+                            'hypothesisId' => 'E',
+                            'location' => 'sync-ui.php:95',
+                            'message' => 'Checking column existence',
+                            'data' => [
+                                'table' => $deletion['table'],
+                                'column_original' => $deletion['column'],
+                                'column_string' => $columnName,
+                                'key' => $key
+                            ],
+                            'timestamp' => time() * 1000
+                        ];
+                        @file_put_contents($logFile, json_encode($logData, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+                        // #endregion
                         
                         // 实时检查字段是否真的存在于数据库中
-                        $columnStillExists = $inspector->columnExists($deletion['table'], $deletion['column']);
+                        $columnStillExists = $inspector->columnExists($deletion['table'], $columnName);
+                        
+                        // #region agent log
+                        $logFile = (strpos(__DIR__, '/var/www') === 0) ? '/var/www/.cursor/debug.log' : dirname(__DIR__) . '/../.cursor/debug.log';
+                        $logData = [
+                            'sessionId' => 'debug-session',
+                            'runId' => 'run1',
+                            'hypothesisId' => 'E',
+                            'location' => 'sync-ui.php:105',
+                            'message' => 'Column existence check result',
+                            'data' => [
+                                'table' => $deletion['table'],
+                                'column' => $columnName,
+                                'column_still_exists' => $columnStillExists,
+                                'will_add_to_active' => $columnStillExists
+                            ],
+                            'timestamp' => time() * 1000
+                        ];
+                        @file_put_contents($logFile, json_encode($logData, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+                        // #endregion
                         
                         if ($columnStillExists) {
                             // 字段还存在，应该显示在待删除列表中（不管之前是否标记为已处理）
@@ -571,7 +624,7 @@ function getPhpPath() {
                                 <td id="stat_schema" class="text-right">-</td>
                             </tr>
                             <tr>
-                                <td><i class="fa fa-table"></i> 表版本记录</td>
+                                <td><i class="fa fa-file-text-o"></i> 日志记录</td>
                                 <td id="stat_versions" class="text-right">-</td>
                             </tr>
                         </table>
