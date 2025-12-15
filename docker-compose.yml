@@ -119,6 +119,35 @@ services:
       - redis
     restart: unless-stopped
 
+  api:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: rimsurge_api
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend/api:/app
+    working_dir: /app
+    environment:
+      - DATABASE_HOST=mysql
+      - DATABASE_PORT=3306
+      - DATABASE_USER=${MYSQL_USER:-fastadmin}
+      - DATABASE_PASSWORD=${MYSQL_PASSWORD:-fastadmin123}
+      - DATABASE_NAME=${MYSQL_DATABASE:-fastadmin}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-a123123}
+      - JWT_SECRET=sM4b2Qkrgxaho51z6NpVAH8SjF0ZfPBO
+    networks:
+      - fastadmin_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
 networks:
   fastadmin_network:
     driver: bridge

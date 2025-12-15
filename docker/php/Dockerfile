@@ -15,8 +15,13 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
+    build-essential \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mysqli mbstring exif pcntl bcmath gd zip opcache \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apt-get purge -y build-essential \
+    && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 安装 Composer

@@ -1,0 +1,52 @@
+"""
+FastAPI 应用入口
+"""
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
+from app.api.v1 import auth, oauth
+from app.core.redis_client import redis_client
+
+# 创建 FastAPI 应用
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+# CORS 中间件
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 注册路由
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["认证"])
+app.include_router(oauth.router, prefix="/api/v1/oauth", tags=["OAuth"])
+
+
+@app.get("/", summary="根路径")
+async def root():
+    """API 根路径"""
+    return {
+        "name": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "docs": "/docs",
+    }
+
+
+@app.get("/health", summary="健康检查")
+async def health():
+    """健康检查端点"""
+    # 检查 Redis 连接
+    redis_ok = redis_client.ping()
+    
+    return {
+        "status": "ok",
+        "redis": "connected" if redis_ok else "disconnected",
+    }
+
