@@ -52,54 +52,6 @@
         </div>
     </div>
     <div class="form-group">
-        <label for="c-level" class="control-label col-xs-12 col-sm-2">{:__('Level')}:</label>
-        <div class="col-xs-12 col-sm-4">
-            <input id="c-level" data-rule="required" class="form-control" name="row[level]" type="number" value="{$row.level|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Gender')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            {:build_radios('row[gender]', ['1'=>__('Male'), '0'=>__('Female')], $row['gender'])}
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="c-birthday" class="control-label col-xs-12 col-sm-2">{:__('Birthday')}:</label>
-        <div class="col-xs-12 col-sm-4">
-            <input id="c-birthday" data-rule="" class="form-control datetimepicker" data-date-format="YYYY-MM-DD" data-use-current="true" name="row[birthday]" type="text" value="{$row.birthday|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="c-bio" class="control-label col-xs-12 col-sm-2">{:__('Bio')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-bio" data-rule="" class="form-control" name="row[bio]" type="text" value="{$row.bio|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="c-money" class="control-label col-xs-12 col-sm-2">{:__('Money')}:</label>
-        <div class="col-xs-12 col-sm-4">
-            <input id="c-money" data-rule="required" class="form-control" name="row[money]" type="number" value="{$row.money|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="c-score" class="control-label col-xs-12 col-sm-2">{:__('Score')}:</label>
-        <div class="col-xs-12 col-sm-4">
-            <input id="c-score" data-rule="required" class="form-control" name="row[score]" type="number" value="{$row.score|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="c-successions" class="control-label col-xs-12 col-sm-2">{:__('Successions')}:</label>
-        <div class="col-xs-12 col-sm-4">
-            <input id="c-successions" data-rule="required" class="form-control" name="row[successions]" type="number" value="{$row.successions|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="c-maxsuccessions" class="control-label col-xs-12 col-sm-2">{:__('Maxsuccessions')}:</label>
-        <div class="col-xs-12 col-sm-4">
-            <input id="c-maxsuccessions" data-rule="required" class="form-control" name="row[maxsuccessions]" type="number" value="{$row.maxsuccessions|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
         <label for="c-prevtime" class="control-label col-xs-12 col-sm-2">{:__('Prevtime')}:</label>
         <div class="col-xs-12 col-sm-4">
             <input id="c-prevtime" data-rule="required" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" data-use-current="true" name="row[prevtime]" type="text" value="{$row.prevtime|datetime}">

@@ -435,6 +435,7 @@ async def register(
     
     # 创建用户
     now_timestamp = int(datetime.utcnow().timestamp())
+    client_ip = req.client.host if req.client else None
     user_id_result = db.execute(
         users_table.insert().values(
             username=username,
@@ -445,6 +446,11 @@ async def register(
             status="normal",
             createtime=now_timestamp,
             updatetime=now_timestamp,
+            joinip=client_ip,  # 注册时的 IP 地址
+            jointime=now_timestamp,  # 注册时间
+            logintime=now_timestamp,  # 注册成功后自动登录，记录登录时间
+            loginip=client_ip,  # 注册成功后自动登录，记录登录 IP
+            loginfailure=0,  # 初始化登录失败次数为 0
         )
     )
     db.commit()
