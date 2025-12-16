@@ -63,8 +63,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 即使 API 调用失败，也清除本地状态
       console.error('Logout failed:', error)
     } finally {
+      // 清除本地状态（必须在 finally 中执行，确保即使 API 失败也清除状态）
       setUser(null)
-      router.push('/login')
+      setIsLoading(false)
+      // 跳转到首页（而不是登录页），让用户可以选择是否重新登录
+      router.push('/')
     }
   }, [router])
 

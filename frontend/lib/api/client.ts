@@ -63,8 +63,9 @@ class ApiClient {
       // 处理错误响应
       if (!response.ok) {
         let errorMessage = '请求失败'
+        let errorData: any = null
         try {
-          const errorData = await response.json()
+          errorData = await response.json()
           errorMessage = errorData.detail || errorMessage
         } catch {
           errorMessage = response.statusText || errorMessage
