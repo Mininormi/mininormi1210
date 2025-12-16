@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { login } from '@/lib/api/auth'
@@ -16,8 +16,28 @@ export default function LoginPage() {
   const [error, setError] = useState<string>('')
   const router = useRouter()
   
-  const authContext = useAuth()
-  const setAuthUser = authContext.login
+  const { isAuthenticated, isLoading: authLoading, login: setAuthUser } = useAuth()
+
+  // 如果已登录，重定向到首页
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace('/')
+    }
+  }, [isAuthenticated, authLoading, router])
+
+  // 加载中时显示加载状态，避免闪烁
+  if (authLoading) {
+    return (
+      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
+        <div className="text-slate-600">加载中...</div>
+      </div>
+    )
+  }
+
+  // 如果已登录，不渲染登录表单（等待重定向）
+  if (isAuthenticated) {
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

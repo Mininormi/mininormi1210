@@ -25,8 +25,14 @@ export default function RegisterPage() {
   const [countdown, setCountdown] = useState(0)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const router = useRouter()
-  const authContext = useAuth()
-  const setAuthUser = authContext.login
+  const { isAuthenticated, isLoading: authLoading, login: setAuthUser } = useAuth()
+
+  // 如果已登录，重定向到首页
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace('/')
+    }
+  }, [isAuthenticated, authLoading, router])
 
   // 倒计时效果
   useEffect(() => {
@@ -35,6 +41,20 @@ export default function RegisterPage() {
       return () => clearTimeout(timer)
     }
   }, [countdown])
+
+  // 加载中时显示加载状态，避免闪烁
+  if (authLoading) {
+    return (
+      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
+        <div className="text-slate-600">加载中...</div>
+      </div>
+    )
+  }
+
+  // 如果已登录，不渲染注册表单（等待重定向）
+  if (isAuthenticated) {
+    return null
+  }
 
   /**
    * 发送验证码
