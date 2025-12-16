@@ -72,7 +72,9 @@ services:
     working_dir: /app
     environment:
       - NODE_ENV=development
+      - CSP_ENV=dev  # CSP 模式：dev（开发）/ prod（生产）/ report-only（测试）
       - WATCHPACK_POLLING=true
+    command: npm run dev -- -H 0.0.0.0 --webpack  # 明确指定开发命令
     networks:
       - fastadmin_network
     restart: unless-stopped
