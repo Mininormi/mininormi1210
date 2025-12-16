@@ -79,6 +79,7 @@ class Settings(BaseSettings):
     # 验证码配置
     VERIFICATION_CODE_EXPIRE_SECONDS: int = 300  # 验证码过期时间（5分钟）
     VERIFICATION_CODE_RATE_LIMIT_SECONDS: int = 120  # 发送频率限制（120秒）
+    VERIFICATION_CODE_RATE_LIMIT_ENABLED: bool = True  # 是否启用发送频率限制（开发环境可设为 False）
     
     class Config:
         env_file = ".env"

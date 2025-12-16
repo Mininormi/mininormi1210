@@ -6,6 +6,7 @@ import { apiClient } from './client'
 export interface LoginRequest {
   account: string
   password: string
+  remember_me?: boolean
 }
 
 export interface RegisterRequest {
@@ -48,10 +49,11 @@ export interface VerifyCodeResponse {
 /**
  * 登录
  */
-export async function login(account: string, password: string): Promise<LoginResponse> {
+export async function login(account: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> {
   return apiClient.post<LoginResponse>('/auth/login', {
     account,
     password,
+    remember_me: rememberMe,
   })
 }
 

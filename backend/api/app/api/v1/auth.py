@@ -106,13 +106,23 @@ async def login(
         device_type=device_type
     )
     
+    # 根据 remember_me 设置不同的 refresh_token 过期时间
+    # 未勾选：1 天，勾选：15 天
+    if request.remember_me:
+        refresh_token_expire_days = 15
+    else:
+        refresh_token_expire_days = 1
+    
+    refresh_token_expire_seconds = refresh_token_expire_days * 24 * 3600
+    
     # 生成 Refresh Token
     refresh_token = redis_client.generate_refresh_token()
     redis_client.set_refresh_token(
         refresh_token=refresh_token,
         user_id=user_dict["id"],
         device_id=device_id,
-        device_type=device_type
+        device_type=device_type,
+        expire_seconds=refresh_token_expire_seconds
     )
     
     # 更新用户最后登录时间
@@ -144,11 +154,12 @@ async def login(
         httponly=True,
         secure=is_production,
         samesite="lax",
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        max_age=refresh_token_expire_seconds,
     )
     
     # 设置 CSRF Token Cookie（非 HttpOnly，前端需要读取）
     # 安全说明：攻击者读不到 cookie 主要靠同源策略，SameSite 影响的是"跨站请求是否带 cookie"
+    # CSRF Token 过期时间与 refresh_token 保持一致，确保不会在 refresh_token 过期之前过期
     csrf_token = generate_csrf_token()
     response.set_cookie(
         key="csrf_token",
@@ -156,7 +167,7 @@ async def login(
         httponly=False,  # 非 HttpOnly，前端需要读取
         secure=is_production,
         samesite="lax",  # 与 access_token 保持一致
-        max_age=settings.CSRF_TOKEN_EXPIRE_SECONDS,  # 使用配置的过期时间（默认1天）
+        max_age=refresh_token_expire_seconds,  # 与 refresh_token 过期时间保持一致
     )
     
     # 返回响应（只返回用户信息，Token 通过 Cookie 返回）
@@ -210,7 +221,18 @@ async def refresh_token(
         device_type=token_data["device_type"]
     )
     
-    # 通过 Cookie 返回新的 access_token（不返回响应体）
+    # 生成新的 CSRF Token（刷新时同时刷新 CSRF Token）
+    csrf_token = generate_csrf_token()
+    
+    # 计算 refresh_token 的剩余过期时间（从 Redis 中获取的 token_data 包含过期时间信息）
+    # 如果 refresh_token 还有效，CSRF Token 的过期时间应该与 refresh_token 的剩余时间保持一致
+    from datetime import datetime
+    expire_time = datetime.fromtimestamp(token_data["expire_time"])
+    remaining_seconds = int((expire_time - datetime.utcnow()).total_seconds())
+    # 确保至少还有 1 小时的有效期
+    csrf_token_expire_seconds = max(remaining_seconds, 3600)
+    
+    # 通过 Cookie 返回新的 access_token 和 csrf_token
     is_production = not settings.DEBUG
     response.set_cookie(
         key="access_token",
@@ -219,6 +241,14 @@ async def refresh_token(
         secure=is_production,
         samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_HOURS * 3600,
+    )
+    response.set_cookie(
+        key="csrf_token",
+        value=csrf_token,
+        httponly=False,  # 非 HttpOnly，前端需要读取
+        secure=is_production,
+        samesite="lax",  # 与 access_token 保持一致
+        max_age=csrf_token_expire_seconds,  # 与 refresh_token 的剩余过期时间保持一致
     )
     
     # 返回空响应（Token 通过 Cookie 返回）
@@ -411,7 +441,6 @@ async def register(
             password=hashed_password,
             salt=salt,
             status="normal",
-            platform="web",
             createtime=now_timestamp,
             updatetime=now_timestamp,
         )
@@ -432,13 +461,17 @@ async def register(
         device_type=device_type
     )
     
+    # 注册时 refresh_token 使用默认过期时间（30天）
+    refresh_token_expire_seconds = settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
+    
     # 生成 Refresh Token
     refresh_token = redis_client.generate_refresh_token()
     redis_client.set_refresh_token(
         refresh_token=refresh_token,
         user_id=user_id,
         device_id=device_id,
-        device_type=device_type
+        device_type=device_type,
+        expire_seconds=refresh_token_expire_seconds
     )
     
     # 设置 HttpOnly Cookie
@@ -451,17 +484,19 @@ async def register(
         samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_HOURS * 3600,
     )
+    
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
         secure=is_production,
         samesite="lax",
-        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
+        max_age=refresh_token_expire_seconds,
     )
     
     # 设置 CSRF Token Cookie（非 HttpOnly，前端需要读取）
     # 安全说明：攻击者读不到 cookie 主要靠同源策略，SameSite 影响的是"跨站请求是否带 cookie"
+    # CSRF Token 过期时间与 refresh_token 保持一致，确保不会在 refresh_token 过期之前过期
     csrf_token = generate_csrf_token()
     response.set_cookie(
         key="csrf_token",
@@ -469,7 +504,7 @@ async def register(
         httponly=False,  # 非 HttpOnly，前端需要读取
         secure=is_production,
         samesite="lax",  # 与 access_token 保持一致
-        max_age=settings.CSRF_TOKEN_EXPIRE_SECONDS,  # 使用配置的过期时间（默认1天）
+        max_age=refresh_token_expire_seconds,  # 与 refresh_token 过期时间保持一致
     )
     
     # 获取用户信息

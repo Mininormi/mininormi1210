@@ -4,6 +4,12 @@ FastAPI 应用入口
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
+
+# #region agent debug
+# 启动时打印限流配置，确认环境变量是否正确加载
+print(f"[STARTUP DEBUG] VERIFICATION_CODE_RATE_LIMIT_ENABLED: {settings.VERIFICATION_CODE_RATE_LIMIT_ENABLED}")
+print(f"[STARTUP DEBUG] Type: {type(settings.VERIFICATION_CODE_RATE_LIMIT_ENABLED)}")
+# #endregion
 from app.api.v1 import auth
 from app.core.redis_client import redis_client
 

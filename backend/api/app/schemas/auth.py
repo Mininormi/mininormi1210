@@ -9,6 +9,7 @@ class LoginRequest(BaseModel):
     """账号密码登录请求"""
     account: str = Field(..., description="账号（用户名/邮箱/手机号）")
     password: str = Field(..., min_length=6, description="密码")
+    remember_me: bool = Field(default=False, description="记住我（延长 refresh_token 过期时间）")
 
 
 class RefreshTokenRequest(BaseModel):

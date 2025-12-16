@@ -112,7 +112,7 @@ services:
     ports:
       - "8083:8081"
     environment:
-      - REDIS_HOSTS=local:redis:6379:0${REDIS_PASSWORD:+:${REDIS_PASSWORD}}
+      - REDIS_HOSTS=local:fastadmin_redis:6379:0:a123123,verification:fastadmin_redis:6379:10:a123123
     networks:
       - fastadmin_network
     depends_on:
@@ -139,6 +139,13 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-a123123}
       - JWT_SECRET=sM4b2Qkrgxaho51z6NpVAH8SjF0ZfPBO
+      - SMTP_HOST=${SMTP_HOST:-smtp.exmail.qq.com}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_USER=${SMTP_USER:-zzp@sy2u.cn}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-ySKcFaca7CzKQ2Je}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-zzp@sy2u.cn}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-RimSurge}
+      - VERIFICATION_CODE_RATE_LIMIT_ENABLED=${VERIFICATION_CODE_RATE_LIMIT_ENABLED:-false}
     networks:
       - fastadmin_network
     depends_on:

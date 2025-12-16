@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ==========================================
-echo FastAPI 容器重启和日志查看脚本
+echo FastAPI 容器重新创建和日志查看脚本
 echo ==========================================
 echo.
 
@@ -28,25 +28,26 @@ if errorlevel 1 (
     echo.
 )
 
-REM 重启容器
+REM 重新创建容器（强制重新创建以重新加载环境变量）
 echo ==========================================
-echo 正在重启 FastAPI 容器...
+echo 正在重新创建 FastAPI 容器...
+echo （这将重新加载 docker-compose.yml 中的环境变量）
 echo ==========================================
-docker compose restart api
+docker compose up -d --force-recreate api
 
 if errorlevel 1 (
-    echo [错误] 重启容器失败
+    echo [错误] 重新创建容器失败
     echo.
     pause
     exit /b 1
 )
 
-echo [成功] 容器重启完成
+echo [成功] 容器重新创建完成
 echo.
 
 REM 等待服务启动
-echo 等待服务完全启动（3秒）...
-timeout /t 3 /nobreak >nul
+echo 等待服务完全启动（5秒）...
+timeout /t 5 /nobreak >nul
 
 REM 显示容器状态
 echo.

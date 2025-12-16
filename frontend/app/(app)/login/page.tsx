@@ -31,7 +31,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await login(account.trim(), password)
+      const response = await login(account.trim(), password, rememberMe)
       // 登录成功，更新认证状态
       setAuthUser(response.user)
       // 跳转到首页或原页面

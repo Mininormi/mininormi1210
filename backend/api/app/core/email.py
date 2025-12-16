@@ -4,6 +4,8 @@ SMTP 邮件发送功能
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email.utils import formataddr
 from typing import Optional
 from app.config import settings
 
@@ -23,11 +25,59 @@ def send_verification_code_email(to_email: str, code: str) -> bool:
         return False
     
     try:
+        # #region agent debug
+        import json
+        import os
+        log_path = r"c:\Users\mininormi\Desktop\rimsurge\rimsurge-pj\.cursor\debug.log"
+        try:
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "sessionId": "debug-session",
+                    "runId": "run1",
+                    "hypothesisId": "A",
+                    "location": "email.py:27",
+                    "message": "Before creating email headers",
+                    "data": {
+                        "smtp_from_name": settings.SMTP_FROM_NAME,
+                        "smtp_from_email": settings.SMTP_FROM_EMAIL,
+                        "to_email": to_email
+                    },
+                    "timestamp": int(__import__("time").time() * 1000)
+                }, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        # #endregion
+        
         # 创建邮件对象
         msg = MIMEMultipart('alternative')
-        msg['From'] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_FROM_EMAIL}>"
+        # 使用 formataddr 和 Header 正确编码包含中文的邮件头
+        # Header 对象需要转换为字符串才能用于邮件头
+        from_name_header = Header(settings.SMTP_FROM_NAME, 'utf-8')
+        msg['From'] = formataddr((str(from_name_header), settings.SMTP_FROM_EMAIL))
         msg['To'] = to_email
-        msg['Subject'] = "RimSurge 邮箱验证码"
+        subject_header = Header("RimSurge 邮箱验证码", 'utf-8')
+        msg['Subject'] = str(subject_header)
+        
+        # #region agent debug
+        try:
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "sessionId": "debug-session",
+                    "runId": "run1",
+                    "hypothesisId": "B",
+                    "location": "email.py:35",
+                    "message": "After setting email headers",
+                    "data": {
+                        "from_header_type": str(type(msg['From'])),
+                        "subject_header_type": str(type(msg['Subject'])),
+                        "from_value": str(msg['From'])[:100] if msg['From'] else None,
+                        "subject_value": str(msg['Subject'])[:100] if msg['Subject'] else None
+                    },
+                    "timestamp": int(__import__("time").time() * 1000)
+                }, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        # #endregion
         
         # HTML 邮件内容
         html_content = f"""
@@ -134,15 +184,100 @@ def send_verification_code_email(to_email: str, code: str) -> bool:
         
         # 发送邮件
         smtp_port = settings.SMTP_PORT or 587
-        use_tls = smtp_port == 587
+        use_ssl = smtp_port == 465  # 端口 465 使用 SMTP_SSL
+        use_tls = smtp_port == 587  # 端口 587 使用 STARTTLS
         
-        with smtplib.SMTP(settings.SMTP_HOST, smtp_port) as server:
-            if use_tls:
-                server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.send_message(msg)
+        # #region agent debug
+        try:
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "sessionId": "debug-session",
+                    "runId": "run1",
+                    "hypothesisId": "C",
+                    "location": "email.py:143",
+                    "message": "Before sending email",
+                    "data": {
+                        "smtp_host": settings.SMTP_HOST,
+                        "smtp_port": smtp_port,
+                        "use_ssl": use_ssl,
+                        "use_tls": use_tls
+                    },
+                    "timestamp": int(__import__("time").time() * 1000)
+                }, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        # #endregion
+        
+        # 使用 sendmail 方法代替 send_message，确保编码正确处理
+        # sendmail 方法可以更好地处理包含中文的邮件头
+        from_email_addr = settings.SMTP_FROM_EMAIL or settings.SMTP_USER
+        
+        if use_ssl:
+            # 使用 SMTP_SSL（端口 465）
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, smtp_port) as server:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                # #region agent debug
+                try:
+                    with open(log_path, "a", encoding="utf-8") as f:
+                        f.write(json.dumps({
+                            "sessionId": "debug-session",
+                            "runId": "run1",
+                            "hypothesisId": "D",
+                            "location": "email.py:150",
+                            "message": "Before sendmail (SMTP_SSL)",
+                            "data": {},
+                            "timestamp": int(__import__("time").time() * 1000)
+                        }, ensure_ascii=False) + "\n")
+                except Exception:
+                    pass
+                # #endregion
+                # 使用 sendmail 方法，msg.as_string() 会自动处理编码
+                server.sendmail(from_email_addr, [to_email], msg.as_string())
+        else:
+            # 使用 SMTP + STARTTLS（端口 587）
+            with smtplib.SMTP(settings.SMTP_HOST, smtp_port) as server:
+                if use_tls:
+                    server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                # #region agent debug
+                try:
+                    with open(log_path, "a", encoding="utf-8") as f:
+                        f.write(json.dumps({
+                            "sessionId": "debug-session",
+                            "runId": "run1",
+                            "hypothesisId": "E",
+                            "location": "email.py:165",
+                            "message": "Before sendmail (SMTP)",
+                            "data": {},
+                            "timestamp": int(__import__("time").time() * 1000)
+                        }, ensure_ascii=False) + "\n")
+                except Exception:
+                    pass
+                # #endregion
+                # 使用 sendmail 方法，msg.as_string() 会自动处理编码
+                server.sendmail(from_email_addr, [to_email], msg.as_string())
         
         return True
     except Exception as e:
+        # #region agent debug
+        import traceback
+        try:
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "sessionId": "debug-session",
+                    "runId": "run1",
+                    "hypothesisId": "F",
+                    "location": "email.py:172",
+                    "message": "Email send exception",
+                    "data": {
+                        "error_type": str(type(e).__name__),
+                        "error_message": str(e),
+                        "traceback": traceback.format_exc()[:500]
+                    },
+                    "timestamp": int(__import__("time").time() * 1000)
+                }, ensure_ascii=False) + "\n")
+        except Exception:
+            pass
+        # #endregion
         print(f"发送邮件失败: {e}")
         return False
