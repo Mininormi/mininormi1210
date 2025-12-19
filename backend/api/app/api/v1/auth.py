@@ -61,14 +61,14 @@ async def login(
     # 判断账号类型并查询用户
     # 包含@为邮箱，否则为用户名
     if "@" in account:
-        # 邮箱登录
+        # 邮箱登录（转小写）
         result = db.execute(
-            select(users_table).where(users_table.c.email == account)
+            select(users_table).where(users_table.c.email == account.lower())
         )
     else:
-        # 用户名登录
+        # 用户名登录（转小写，确保大小写不敏感）
         result = db.execute(
-            select(users_table).where(users_table.c.username == account)
+            select(users_table).where(users_table.c.username == account.lower())
         )
     
     user_row = result.fetchone()
@@ -504,27 +504,18 @@ async def register(
             detail="该邮箱已被注册"
         )
     
-    # 生成用户名（如果未提供，使用邮箱前缀）
-    if request.username:
-        username = request.username.strip()
-        # 检查用户名是否已存在
-        result = db.execute(
-            select(users_table).where(users_table.c.username == username)
+    # 使用用户提供的用户名（schema 验证器已确保格式正确并转小写）
+    username = request.username.lower().strip()
+    
+    # 检查用户名是否已存在（转小写后检查，确保大小写不敏感）
+    result = db.execute(
+        select(users_table).where(users_table.c.username == username)
+    )
+    if result.fetchone():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="该用户名已被使用"
         )
-        if result.fetchone():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="该用户名已被使用"
-            )
-    else:
-        # 使用邮箱前缀作为用户名
-        username = email.split("@")[0]
-        # 如果用户名已存在，添加随机后缀
-        result = db.execute(
-            select(users_table).where(users_table.c.username == username)
-        )
-        if result.fetchone():
-            username = f"{username}_{secrets.token_hex(4)}"
     
     # 生成盐值
     salt = secrets.token_hex(8)

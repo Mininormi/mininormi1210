@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -109,6 +110,19 @@ export default function RegisterPage() {
       newErrors.lastName = 'Last name is required'
     }
 
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required'
+    } else {
+      const username = formData.username.trim().toLowerCase()
+      if (username.length < 3 || username.length > 30) {
+        newErrors.username = 'Username must be 3-30 characters'
+      } else if (!/^[a-z0-9_]+$/.test(username)) {
+        newErrors.username = 'Username can only contain lowercase letters, numbers, and underscores'
+      } else if (username.includes('@')) {
+        newErrors.username = 'Username cannot contain @ symbol'
+      }
+    }
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -152,6 +166,7 @@ export default function RegisterPage() {
     try {
       const registerData = {
         email: formData.email.trim(),
+        username: formData.username.trim().toLowerCase(),
         password: formData.password,
         nickname: `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim(),
         verification_code: formData.verificationCode.trim(),
@@ -166,6 +181,9 @@ export default function RegisterPage() {
       // 如果是验证码错误，显示在验证码字段
       if (errorMessage.includes('验证码')) {
         setErrors({ ...errors, verificationCode: errorMessage })
+      } else if (errorMessage.includes('用户名')) {
+        // 如果是用户名相关错误，显示在用户名字段
+        setErrors({ ...errors, username: errorMessage })
       } else {
         setErrors({ ...errors, submit: errorMessage })
       }
@@ -244,6 +262,30 @@ export default function RegisterPage() {
                   <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>
                 )}
               </div>
+            </div>
+
+            {/* Username 输入 */}
+            <div>
+              <label htmlFor="username" className="mb-1.5 block text-sm font-semibold text-slate-900">
+                Username *
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={formData.username}
+                onChange={(e) => handleChange('username', e.target.value)}
+                required
+                className={`w-full rounded-lg border ${
+                  errors.username ? 'border-red-300' : 'border-slate-300'
+                } bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-colors focus:border-slate-900 focus:ring-2 focus:ring-slate-900/20`}
+                placeholder="username123"
+              />
+              {errors.username && (
+                <p className="mt-1 text-xs text-red-600">{errors.username}</p>
+              )}
+              <p className="mt-1 text-xs text-slate-500">
+                3-30 characters, lowercase letters, numbers, and underscores only
+              </p>
             </div>
 
             {/* Email 输入 */}
