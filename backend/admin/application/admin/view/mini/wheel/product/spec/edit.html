@@ -1,0 +1,141 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Product_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-product_id" data-rule="required" data-source="i/wheel/product/index" class="form-control selectpage" name="row[product_id]" type="text" value="{$row.product_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Slug')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-slug" class="form-control" name="row[slug]" type="text" value="{$row.slug|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Size')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-size" data-rule="required" class="form-control" name="row[size]" type="text" value="{$row.size|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Diameter')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-diameter" class="form-control" name="row[diameter]" type="number" value="{$row.diameter|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Width')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-width" class="form-control" step="0.1" name="row[width]" type="number" value="{$row.width|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pcd')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pcd" class="form-control" name="row[pcd]" type="text" value="{$row.pcd|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pcd_lugs')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pcd_lugs" class="form-control" name="row[pcd_lugs]" type="number" value="{$row.pcd_lugs|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pcd_mm')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pcd_mm" class="form-control" step="0.1" name="row[pcd_mm]" type="number" value="{$row.pcd_mm|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Offset')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-offset" class="form-control" name="row[offset]" type="number" value="{$row.offset|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Center_bore')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-center_bore" class="form-control" step="0.1" name="row[center_bore]" type="number" value="{$row.center_bore|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Seat_type')}:</label>
+        <div class="col-xs-12 col-sm-8">
+                        
+            <select  id="c-seat_type" class="form-control selectpicker" name="row[seat_type]">
+                {foreach name="seatTypeList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.seat_type"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Bolt_hole_diameter_mm')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-bolt_hole_diameter_mm" class="form-control" step="0.01" name="row[bolt_hole_diameter_mm]" type="number" value="{$row.bolt_hole_diameter_mm|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Weight_kg')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-weight_kg" class="form-control" step="0.01" name="row[weight_kg]" type="number" value="{$row.weight_kg|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Load_rating_kg')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-load_rating_kg" class="form-control" name="row[load_rating_kg]" type="number" value="{$row.load_rating_kg|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Tpms_compatible')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-tpms_compatible" class="form-control" name="row[tpms_compatible]" type="number" value="{$row.tpms_compatible|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Sale_price')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-sale_price" class="form-control" step="0.01" name="row[sale_price]" type="number" value="{$row.sale_price|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Original_price')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-original_price" class="form-control" step="0.01" name="row[original_price]" type="number" value="{$row.original_price|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Stock')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-stock" class="form-control" name="row[stock]" type="number" value="{$row.stock|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Status')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            
+            <div class="radio">
+            {foreach name="statusList" item="vo"}
+            <label for="row[status]-{$key}"><input id="row[status]-{$key}" name="row[status]" type="radio" value="{$key}" {in name="key" value="$row.status"}checked{/in} /> {$vo}</label> 
+            {/foreach}
+            </div>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Weigh')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-weigh" class="form-control" name="row[weigh]" type="number" value="{$row.weigh|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>
