@@ -50,15 +50,21 @@ class Common extends Api
 
             //配置信息
             $upload = Config::get('upload');
-            //如果非服务端中转模式需要修改为中转
-            if ($upload['storage'] != 'local' && isset($upload['uploadmode']) && $upload['uploadmode'] != 'server') {
-                //临时修改上传模式为服务端中转
+            //如果非服务端中转模式需要修改为中转（排除 r2，因为 r2 是内置存储不是插件）
+            if ($upload['storage'] != 'local' && $upload['storage'] != 'r2' && isset($upload['uploadmode']) && $upload['uploadmode'] != 'server') {
+                //临时修改上传模式为服务端中转（仅针对插件）
                 set_addon_config($upload['storage'], ["uploadmode" => "server"], false);
 
                 $upload = \app\common\model\Config::upload();
                 // 上传信息配置后
                 Hook::listen("upload_config_init", $upload);
 
+                $upload = Config::set('upload', array_merge(Config::get('upload'), $upload));
+            } elseif ($upload['storage'] == 'r2') {
+                // R2 存储直接使用服务器中转模式，不需要调用 addon_config
+                $upload = \app\common\model\Config::upload();
+                // 上传信息配置后
+                Hook::listen("upload_config_init", $upload);
                 $upload = Config::set('upload', array_merge(Config::get('upload'), $upload));
             }
 

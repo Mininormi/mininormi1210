@@ -109,47 +109,47 @@ function AllWheelsContent() {
                 Loading fitment info...
               </div>
             ) : fitment ? (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm text-white">
-                    🚗
-                  </span>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      OEM Info
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm text-white">
+                🚗
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  OEM Info
+                </p>
+                <p className="text-sm font-semibold text-slate-900">
                       {fitment.vehicle_name || fitment.vehicle_id}
-                    </p>
-                  </div>
-                </div>
+                </p>
+              </div>
+            </div>
 
-                <div className="overflow-x-auto px-5 py-4">
-                  <table className="min-w-full text-left text-xs text-slate-700">
-                    <thead className="border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
-                      <tr>
-                        <th className="py-2 pr-4">OEM Wheels</th>
-                        <th className="py-2 pr-4">Bolt Pattern</th>
-                        <th className="py-2 pr-4">OEM Offset</th>
-                        <th className="py-2 pr-4">Wheel Size</th>
+            <div className="overflow-x-auto px-5 py-4">
+              <table className="min-w-full text-left text-xs text-slate-700">
+                <thead className="border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="py-2 pr-4">OEM Wheels</th>
+                    <th className="py-2 pr-4">Bolt Pattern</th>
+                    <th className="py-2 pr-4">OEM Offset</th>
+                    <th className="py-2 pr-4">Wheel Size</th>
                         <th className="py-2 pr-4">Hub Bore</th>
-                        <th className="py-2 pr-4">Tire Size</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-[11px]">
+                    <th className="py-2 pr-4">Tire Size</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-[11px]">
                       {fitment.oem_front && (
-                        <tr>
-                          <td className="py-2 pr-4 font-medium text-slate-900">Front</td>
+                  <tr>
+                    <td className="py-2 pr-4 font-medium text-slate-900">Front</td>
                           <td className="py-2 pr-4">{fitment.oem_front.bolt_pattern || '-'}</td>
                           <td className="py-2 pr-4">{fitment.oem_front.offset_oem || '-'}</td>
                           <td className="py-2 pr-4">{fitment.oem_front.wheel_size || '-'}</td>
                           <td className="py-2 pr-4">{fitment.oem_front.hub_bore || '-'}</td>
                           <td className="py-2 pr-4">{fitment.oem_front.tire_size || '-'}</td>
-                        </tr>
+                  </tr>
                       )}
                       {fitment.oem_rear && (
-                        <tr>
-                          <td className="py-2 pr-4 font-medium text-slate-900">Rear</td>
+                  <tr>
+                    <td className="py-2 pr-4 font-medium text-slate-900">Rear</td>
                           <td className="py-2 pr-4">{fitment.oem_rear.bolt_pattern || '-'}</td>
                           <td className="py-2 pr-4">{fitment.oem_rear.offset_oem || '-'}</td>
                           <td className="py-2 pr-4">{fitment.oem_rear.wheel_size || '-'}</td>
@@ -162,64 +162,64 @@ function AllWheelsContent() {
                           <td colSpan={6} className="py-2 pr-4 text-center text-slate-500">
                             Non-staggered setup
                           </td>
-                        </tr>
+                  </tr>
                       )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                </tbody>
+              </table>
+            </div>
+          </div>
             ) : null}
 
             {/* Available Sizes */}
             {fitment && fitment.available_sizes.length > 0 && (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Available Sizes
-                    </p>
-                    <p className="mt-1 text-xs text-slate-600">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Available Sizes
+                </p>
+                <p className="mt-1 text-xs text-slate-600">
                       Upsize / downsize around the OEM package.
-                    </p>
-                  </div>
-                </div>
-                <div className="px-5 py-4">
-                  <div className="flex flex-wrap gap-2">
+                </p>
+              </div>
+            </div>
+            <div className="px-5 py-4">
+              <div className="flex flex-wrap gap-2">
                     {fitment.available_sizes.map((size, index) => {
                       const isSelected = size.diameter === selectedDiameter || 
                         (size.diameter === null && selectedDiameter === null)
                       return (
-                        <button
+                <button
                           key={index}
-                          type="button"
+                  type="button"
                           onClick={() => handleSizeClick(size.diameter)}
                           className={`inline-flex items-center justify-center rounded-full px-4 py-1.5 text-xs font-medium transition ${
                             isSelected
                               ? 'bg-slate-900 text-white shadow-md shadow-slate-900/30'
                               : 'border border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-900'
                           }`}
-                        >
+                >
                           {size.label}
-                        </button>
+                </button>
                       )
                     })}
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
             )}
           </>
         )}
 
         {/* 商品列表 */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-slate-900">
-              All Wheels ·{' '}
-              <span className="font-normal text-slate-500">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-slate-900">
+                All Wheels ·{' '}
+                <span className="font-normal text-slate-500">
                 {loading ? 'Loading...' : `Showing ${wheels.length} of ${total}+`}
-              </span>
-            </p>
-          </div>
+                </span>
+              </p>
+            </div>
 
           {loading ? (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -244,12 +244,12 @@ function AllWheelsContent() {
             </div>
           ) : (
             <>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {wheels.map((wheel) => (
-                  <article
+                <article
                     key={wheel.product_id}
-                    className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                  >
+                  className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
                     <Link href={`/shop/product/${wheel.product_id}`} className="block">
                       <div className="aspect-square w-full bg-slate-100">
                         {wheel.image && (
@@ -260,99 +260,99 @@ function AllWheelsContent() {
                           />
                         )}
                       </div>
-                    </Link>
+                  </Link>
 
-                    <div className="flex flex-1 flex-col gap-3 px-4 py-3">
+                  <div className="flex flex-1 flex-col gap-3 px-4 py-3">
                       <div className="flex min-h-20 flex-col justify-between">
-                        <div className="flex items-center justify-between gap-3 h-10">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      <div className="flex items-center justify-between gap-3 h-10">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                             {wheel.brand_name || 'Unknown Brand'}
                           </p>
-                        </div>
-                        <h3 className="mt-1 text-sm font-semibold leading-snug text-slate-900 line-clamp-3">
-                          {wheel.name}
-                        </h3>
                       </div>
+                      <h3 className="mt-1 text-sm font-semibold leading-snug text-slate-900 line-clamp-3">
+                        {wheel.name}
+                      </h3>
+                    </div>
 
-                      <div>
-                        <div className="flex items-baseline gap-2">
+                    <div>
+                      <div className="flex items-baseline gap-2">
                           {wheel.sale_price && (
-                            <span className="text-sm font-semibold text-slate-900">
+                        <span className="text-sm font-semibold text-slate-900">
                               ${wheel.sale_price} CAD
-                            </span>
+                        </span>
                           )}
                           {wheel.original_price && wheel.original_price > (wheel.sale_price || 0) && (
-                            <span className="text-xs text-slate-400 line-through">
+                        <span className="text-xs text-slate-400 line-through">
                               ${wheel.original_price}
-                            </span>
+                        </span>
                           )}
-                        </div>
+                      </div>
                         {wheel.price_per && (
                           <p className="mt-1 text-[11px] text-slate-500">{wheel.price_per}</p>
                         )}
-                      </div>
+                    </div>
 
                       {wheel.specs.length > 0 && (
                         <div className="mt-1 text-[11px] text-slate-500">
                           {wheel.specs.length} specification{wheel.specs.length > 1 ? 's' : ''} available
-                        </div>
+                      </div>
                       )}
 
-                      <div className="mt-auto flex items-center justify-end pt-2">
+                    <div className="mt-auto flex items-center justify-end pt-2">
                         <Link
                           href={`/shop/product/${wheel.product_id}`}
-                          className="inline-flex items-center justify-center rounded-full bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-black"
-                        >
-                          Details & Preview
+                        className="inline-flex items-center justify-center rounded-full bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-black"
+                      >
+                        Details & Preview
                         </Link>
-                      </div>
                     </div>
-                  </article>
-                ))}
-              </div>
+                  </div>
+                </article>
+              ))}
+            </div>
 
-              {/* 分页 */}
+            {/* 分页 */}
               {total > pageSize && (
-                <nav className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-600">
-                  <button
-                    type="button"
+            <nav className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-600">
+              <button
+                type="button"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                     className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 hover:border-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <div className="flex items-center gap-1">
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
                     {Array.from({ length: Math.ceil(total / pageSize) }, (_, i) => i + 1)
                       .filter((p) => p === 1 || p === Math.ceil(total / pageSize) || Math.abs(p - page) <= 1)
                       .map((p, idx, arr) => (
                         <div key={p} className="flex items-center gap-1">
                           {idx > 0 && arr[idx - 1] !== p - 1 && (
-                            <span className="px-1 text-[11px] text-slate-400">…</span>
+                <span className="px-1 text-[11px] text-slate-400">…</span>
                           )}
-                          <button
-                            type="button"
+                <button
+                  type="button"
                             onClick={() => setPage(p)}
                             className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[11px] ${
                               p === page
                                 ? 'bg-slate-900 font-semibold text-white'
                                 : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-900'
                             }`}
-                          >
+                >
                             {p}
-                          </button>
+                </button>
                         </div>
                       ))}
-                  </div>
-                  <button
-                    type="button"
+              </div>
+              <button
+                type="button"
                     onClick={() => setPage((p) => Math.min(Math.ceil(total / pageSize), p + 1))}
                     disabled={page >= Math.ceil(total / pageSize)}
                     className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 hover:border-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </nav>
+              >
+                Next
+              </button>
+            </nav>
               )}
             </>
           )}

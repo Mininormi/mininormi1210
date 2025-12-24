@@ -113,6 +113,7 @@ class Attachment extends Backend
         }
         $ids = $ids ? $ids : $this->request->post("ids");
         if ($ids) {
+            // 添加本地文件删除的 hook（仅当 storage 为 local 时）
             \think\Hook::add('upload_delete', function ($params) {
                 if ($params['storage'] == 'local') {
                     $attachmentFile = ROOT_PATH . '/public' . $params['url'];
@@ -120,6 +121,7 @@ class Attachment extends Backend
                         @unlink($attachmentFile);
                     }
                 }
+                // R2 存储的删除逻辑由 R2Storage 行为类处理
             });
             $attachmentlist = $this->model->where('id', 'in', $ids)->select();
             foreach ($attachmentlist as $attachment) {

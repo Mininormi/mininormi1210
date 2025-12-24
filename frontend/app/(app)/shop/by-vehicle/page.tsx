@@ -229,7 +229,7 @@ export default function ByVehiclePage() {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-            >
+                >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -238,7 +238,7 @@ export default function ByVehiclePage() {
               />
             </svg>
           </div>
-        </div>
+              </div>
 
         {/* 选择面板 */}
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -266,7 +266,7 @@ export default function ByVehiclePage() {
                   </div>
                 )}
               </div>
-            </div>
+              </div>
           )}
 
           {activeStep === 'make' && selectedYear && (
@@ -295,7 +295,7 @@ export default function ByVehiclePage() {
                   </div>
                 )}
               </div>
-            </div>
+              </div>
           )}
 
           {activeStep === 'model' && selectedMakeId && selectedYear && (
@@ -336,19 +336,19 @@ export default function ByVehiclePage() {
                 ) : (
                   <div className="space-y-1">
                     {vehicles.map((vehicle) => (
-                      <button
+              <button
                         key={vehicle.vehicle_id}
                         type="button"
                         onClick={() => handleVehicleSelect(vehicle.vehicle_id)}
                         className="w-full rounded-lg px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-100"
                       >
                         {vehicle.vehicle_name || vehicle.vehicle_id}
-                      </button>
+              </button>
                     ))}
                   </div>
                 )}
-              </div>
             </div>
+        </div>
           )}
         </div>
       </section>

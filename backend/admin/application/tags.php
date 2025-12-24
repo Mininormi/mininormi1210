@@ -37,4 +37,16 @@ return [
     'log_write'    => [],
     // 应用结束
     'app_end'      => [],
+    // 上传配置初始化
+    'upload_config_init' => [
+        'app\\common\\behavior\\R2Storage',
+    ],
+    // 上传完成后
+    'upload_after' => [
+        'app\\common\\behavior\\R2Storage',
+    ],
+    // 删除附件时
+    'upload_delete' => [
+        'app\\common\\behavior\\R2Storage',
+    ],
 ];

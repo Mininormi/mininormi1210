@@ -1,18 +1,17 @@
 <?php
 
-namespace addons\alioss\controller;
+namespace addons\r2\controller;
 
-use addons\alioss\library\Auth;
+use addons\r2\library\Auth;
+use addons\r2\library\S3\S3Client;
 use app\common\exception\UploadException;
 use app\common\library\Upload;
 use app\common\model\Attachment;
-use OSS\Core\OssException;
-use OSS\OssClient;
 use think\addons\Controller;
 use think\Config;
 
 /**
- * 阿里OSS云储存
+ * Cloudflare R2云储存 (S3兼容)
  *
  */
 class Index extends Controller
@@ -34,13 +33,13 @@ class Index extends Controller
     }
 
     /**
-     * 获取签名
+     * 获取签名和presigned URL
      */
     public function params()
     {
         $this->check();
 
-        $config = get_addon_config('alioss');
+        $config = get_addon_config('r2');
         $name = $this->request->post('name');
         $md5 = $this->request->post('md5');
         $chunk = $this->request->post('chunk');
@@ -53,29 +52,44 @@ class Index extends Controller
             $this->error('不允许的文件类型');
         }
 
-        $auth = new \addons\alioss\library\Auth();
+        $auth = new Auth();
         $params = $auth->params($name, $md5);
-        $params['OSSAccessKeyId'] = $params['id'];
-        $params['success_action_status'] = 200;
-        $config = get_addon_config('alioss');
-
+        
         if ($chunk) {
-            $oss = new OssClient($config['accessKeyId'], $config['accessKeySecret'], $config['endpoint']);
-            // 初始化
+            // 分片上传：初始化multipart upload并生成每个分片的presigned URL
+            $s3Client = new S3Client($config['accessKeyId'], $config['secretAccessKey'], $config['endpoint'], $config['region']);
+            
             $fileSize = $this->request->post('size');
             $chunkSize = $this->request->post('chunksize');
-            $uploadId = $oss->initiateMultipartUpload($config['bucket'], $params['key']);
+            
+            // 初始化multipart upload
+            $contentType = mime_content_type($name) ?: 'application/octet-stream';
+            $uploadId = $s3Client->initiateMultipartUpload($config['bucket'], $params['key'], ['Content-Type' => $contentType]);
             $params['uploadId'] = $uploadId;
-            $params['parts'] = $oss->generateMultiuploadParts($fileSize, $chunkSize);
-            $params['partsAuthorization'] = [];
-            $date = gmdate('D, d M Y H:i:s \G\M\T');
-            foreach ($params['parts'] as $index => $part) {
-                $partNumber = $index + 1;
-                $signstr = "PUT\n\n\n{$date}\nx-oss-date:{$date}\n/{$config['bucket']}/{$params['key']}?partNumber={$partNumber}&uploadId={$uploadId}";
-                $authorization = base64_encode(hash_hmac('sha1', $signstr, $config['accessKeySecret'], true));
-                $params['partsAuthorization'][$index] = $authorization;
+            
+            // 计算分片数量
+            $partCount = ceil($fileSize / $chunkSize);
+            $params['parts'] = [];
+            $params['partUrls'] = [];
+            $expires = time() + $config['expire'];
+            
+            // 为每个分片生成presigned URL
+            for ($i = 0; $i < $partCount; $i++) {
+                $partNumber = $i + 1;
+                $partUrl = $auth->generatePresignedPartUrl(
+                    $config['bucket'],
+                    $params['key'],
+                    $uploadId,
+                    $partNumber,
+                    $expires,
+                    $config['accessKeyId'],
+                    $config['secretAccessKey'],
+                    $config['endpoint'],
+                    $config['region']
+                );
+                $params['parts'][] = ['PartNumber' => $partNumber];
+                $params['partUrls'][$i] = $partUrl;
             }
-            $params['date'] = $date;
         }
 
         $this->success('', null, $params);
@@ -89,7 +103,7 @@ class Index extends Controller
      */
     public function upload($isApi = false)
     {
-        $config = get_addon_config('alioss');
+        $config = get_addon_config('r2');
         if ($isApi === true) {
             if (!Auth::isModuleAllow()) {
                 $this->error("请登录后再进行操作");
@@ -97,7 +111,7 @@ class Index extends Controller
         } else {
             $this->check();
         }
-        $oss = new OssClient($config['accessKeyId'], $config['accessKeySecret'], $config['endpoint']);
+        $s3Client = new S3Client($config['accessKeyId'], $config['secretAccessKey'], $config['endpoint'], $config['region']);
 
         //检测删除文件或附件
         $checkDeleteFile = function ($attachment, $upload, $force = false) use ($config) {
@@ -121,7 +135,6 @@ class Index extends Controller
             $chunkcount = $this->request->post("chunkcount/d");
             $filesize = $this->request->post("filesize");
             $filename = $this->request->post("filename");
-            $method = $this->request->method(true);
             $key = $this->request->post("key");
             $uploadId = $this->request->post("uploadId");
 
@@ -149,7 +162,7 @@ class Index extends Controller
                     $listParts[] = array("PartNumber" => $i + 1, "ETag" => $etags[$i]);
                 }
                 try {
-                    $ret = $oss->completeMultipartUpload($config['bucket'], $key, $uploadId, $listParts);
+                    $ret = $s3Client->completeMultipartUpload($config['bucket'], $key, $uploadId, $listParts);
                 } catch (\Exception $e) {
                     $checkDeleteFile($attachment, $upload, true);
                     $this->error($e->getMessage());
@@ -164,7 +177,7 @@ class Index extends Controller
                     $this->success("上传成功", '', ['url' => "/" . $key, 'fullurl' => cdnurl("/" . $key, true)]);
                 }
             } else {
-                //默认普通上传文件
+                //上传分片
                 $file = $this->request->file('file');
                 try {
                     $upload = new Upload($file);
@@ -173,13 +186,13 @@ class Index extends Controller
                     $this->error($e->getMessage());
                 }
                 try {
-                    //上传分片到OSS
-                    $ret = $oss->uploadPart($config['bucket'], $key, $uploadId, ['fileUpload' => $file->getRealPath(), 'partNumber' => $chunkindex + 1]);
+                    //上传分片到R2
+                    $etag = $s3Client->uploadPart($config['bucket'], $key, $uploadId, $chunkindex + 1, $file->getRealPath());
                 } catch (\Exception $e) {
                     $this->error($e->getMessage());
                 }
 
-                $this->success("上传成功", "", [], 3, ['ETag' => $ret]);
+                $this->success("上传成功", "", [], 3, ['ETag' => $etag]);
             }
         } else {
             $attachment = null;
@@ -198,7 +211,7 @@ class Index extends Controller
             $url = $attachment->url;
 
             try {
-                $ret = $oss->uploadFile($config['bucket'], ltrim($attachment->url, "/"), $filePath);
+                $ret = $s3Client->putObject($config['bucket'], ltrim($attachment->url, "/"), $filePath);
                 //成功不做任何操作
             } catch (\Exception $e) {
                 $checkDeleteFile($attachment, $upload, true);
@@ -210,7 +223,7 @@ class Index extends Controller
             // 记录云存储记录
             $data = $attachment->toArray();
             unset($data['id']);
-            $data['storage'] = 'alioss';
+            $data['storage'] = 'r2';
             Attachment::create($data, true);
 
             $this->success("上传成功", '', ['url' => $url, 'fullurl' => cdnurl($url, true)]);
@@ -224,7 +237,7 @@ class Index extends Controller
     public function notify()
     {
         $this->check();
-        $config = get_addon_config('alioss');
+        $config = get_addon_config('r2');
         if ($config['uploadmode'] != 'client') {
             $this->error("无需执行该操作");
         }
@@ -240,7 +253,7 @@ class Index extends Controller
         $category = array_key_exists($category, config('site.attachmentcategory') ?? []) ? $category : '';
         $suffix = strtolower(pathinfo($name, PATHINFO_EXTENSION));
         $suffix = $suffix && preg_match("/^[a-zA-Z0-9]+$/", $suffix) ? $suffix : 'file';
-        $attachment = Attachment::where('url', $url)->where('storage', 'alioss')->find();
+        $attachment = Attachment::where('url', $url)->where('storage', 'r2')->find();
         if (!$attachment) {
             $params = array(
                 'category'    => $category,
@@ -255,7 +268,7 @@ class Index extends Controller
                 'mimetype'    => $type,
                 'url'         => $url,
                 'uploadtime'  => time(),
-                'storage'     => 'alioss',
+                'storage'     => 'r2',
                 'sha1'        => $md5,
             );
             Attachment::create($params, true);
@@ -268,19 +281,19 @@ class Index extends Controller
      */
     protected function check()
     {
-        $aliosstoken = $this->request->post('aliosstoken', '', 'trim');
-        if (!$aliosstoken) {
+        $r2token = $this->request->post('r2token', '', 'trim');
+        if (!$r2token) {
             $this->error("参数不正确(code:1)");
         }
-        $config = get_addon_config('alioss');
-        list($accessKeyId, $sign, $data) = explode(':', $aliosstoken);
+        $config = get_addon_config('r2');
+        list($accessKeyId, $sign, $data) = explode(':', $r2token);
         if (!$accessKeyId || !$sign || !$data) {
             $this->error("参数不能为空(code:2)");
         }
         if ($accessKeyId !== $config['accessKeyId']) {
             $this->error("参数不正确(code:3)");
         }
-        if ($sign !== base64_encode(hash_hmac('sha1', base64_decode($data), $config['accessKeySecret'], true))) {
+        if ($sign !== base64_encode(hash_hmac('sha256', base64_decode($data), $config['secretAccessKey'], true))) {
             $this->error("签名不正确");
         }
         $json = json_decode(base64_decode($data), true);

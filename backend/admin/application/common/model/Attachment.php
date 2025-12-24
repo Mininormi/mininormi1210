@@ -23,7 +23,9 @@ class Attachment extends Model
     {
         // 如果已经上传该资源，则不再记录
         self::beforeInsert(function ($model) {
-            if (self::where('url', '=', $model['url'])->where('storage', $model['storage'])->find()) {
+            // 检查 storage 字段是否存在，如果不存在则使用默认值 'local'
+            $storage = isset($model['storage']) ? $model['storage'] : 'local';
+            if (self::where('url', '=', $model['url'])->where('storage', $storage)->find()) {
                 return false;
             }
         });
@@ -57,6 +59,15 @@ class Attachment extends Model
         if (!isset($data['storage']) || $data['storage'] == 'local') {
             return '';
         } else {
+            // 如果是 R2 存储，从配置中读取
+            if ($data['storage'] == 'r2') {
+                $r2Config = \think\Config::get('r2');
+                if ($r2Config && isset($r2Config['thumbstyle'])) {
+                    return $r2Config['thumbstyle'];
+                }
+                return '';
+            }
+            // 其他存储类型（插件）从 addon_config 读取
             $config = get_addon_config($data['storage']);
             if ($config && isset($config['thumbstyle'])) {
                 return $config['thumbstyle'];

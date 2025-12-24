@@ -402,6 +402,14 @@ class Upload
         $category = request()->post('category');
         $category = array_key_exists($category, config('site.attachmentcategory') ?? []) ? $category : '';
         $auth = Auth::instance();
+        // 获取存储类型配置（默认为 local）
+        $storage = Config::get('upload.storage', 'local');
+        
+        // 如果 storage 为 null，使用默认值 'local'
+        if (is_null($storage) || $storage === '') {
+            $storage = 'local';
+        }
+        
         $params = array(
             'admin_id'    => (int)session('admin.id'),
             'user_id'     => (int)$auth->id,
@@ -415,12 +423,20 @@ class Upload
             'mimetype'    => $this->fileInfo['type'],
             'url'         => $uploadDir . $file->getSaveName(),
             'uploadtime'  => time(),
-            'storage'     => 'local',
+            'storage'     => $storage, // 使用配置的存储类型
             'sha1'        => $sha1,
             'extparam'    => '',
         );
         $attachment = new Attachment();
-        $attachment->data(array_filter($params));
+        // 确保 storage 不被过滤掉（array_filter 会过滤 null、false、''）
+        $filteredParams = array_filter($params, function($value, $key) {
+            // 保留 storage 字段，即使它是 null
+            if ($key === 'storage') {
+                return true;
+            }
+            return $value !== null && $value !== false && $value !== '';
+        }, ARRAY_FILTER_USE_BOTH);
+        $attachment->data($filteredParams);
         $attachment->save();
 
         \think\Hook::listen("upload_after", $attachment);

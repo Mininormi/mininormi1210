@@ -1,19 +1,17 @@
 <?php
 
-namespace addons\alioss;
+namespace addons\r2;
 
-use addons\alioss\library\Auth;
-use OSS\Core\OssException;
-use OSS\OssClient;
+use addons\r2\library\Auth;
+use addons\r2\library\S3\S3Client;
 use think\Addons;
 use think\App;
 use think\Config;
-use think\Loader;
 
 /**
- * 阿里云OSS上传插件
+ * Cloudflare R2上传插件 (S3兼容)
  */
-class Alioss extends Addons
+class R2 extends Addons
 {
 
     /**
@@ -35,17 +33,6 @@ class Alioss extends Addons
     }
 
     /**
-     * 添加命名空间
-     */
-    public function appInit()
-    {
-        if (!class_exists("\OSS\OssClient")) {
-            //添加支付包的命名空间
-            Loader::addNamespace('OSS', ADDON_PATH . 'alioss' . DS . 'library' . DS . 'OSS' . DS);
-        }
-    }
-
-    /**
      * 判断是否来源于API上传
      */
     public function moduleInit($request)
@@ -57,7 +44,7 @@ class Alioss extends Addons
             strtolower($request->controller()) == 'common' &&
             strtolower($request->action()) == 'upload') {
             request()->param('isApi', true);
-            App::invokeMethod(["\\addons\\alioss\\controller\\Index", "upload"], ['isApi' => true]);
+            App::invokeMethod(["\\addons\\r2\\controller\\Index", "upload"], ['isApi' => true]);
         }
     }
 
@@ -69,19 +56,20 @@ class Alioss extends Addons
         $config = $this->getConfig();
 
         $data = ['deadline' => time() + $config['expire']];
-        $signature = hash_hmac('sha1', json_encode($data), $config['accessKeySecret'], true);
+        $signature = hash_hmac('sha256', json_encode($data), $config['secretAccessKey'], true);
 
         $token = '';
         if (Auth::isModuleAllow()) {
             $token = $config['accessKeyId'] . ':' . base64_encode($signature) . ':' . base64_encode(json_encode($data));
         }
         $multipart = [
-            'aliosstoken' => $token
+            'r2token' => $token
         ];
-        $config['uploadurl'] = 'https://' . $config['bucket'] . '.' . $config['endpoint'];
+        // R2 endpoint格式: https://<account-id>.r2.cloudflarestorage.com 或自定义域名
+        $config['uploadurl'] = rtrim($config['endpoint'], '/');
         $upload = array_merge($upload, [
             'cdnurl'     => $config['cdnurl'],
-            'uploadurl'  => $config['uploadmode'] == 'client' ? $config['uploadurl'] : addon_url('alioss/index/upload', [], false, true),
+            'uploadurl'  => $config['uploadmode'] == 'client' ? $config['uploadurl'] : addon_url('r2/index/upload', [], false, true),
             'uploadmode' => $config['uploadmode'],
             'bucket'     => $config['bucket'],
             'maxsize'    => $config['maxsize'],
@@ -101,12 +89,12 @@ class Alioss extends Addons
     public function uploadDelete($attachment)
     {
         $config = $this->getConfig();
-        if ($attachment['storage'] == 'alioss' && isset($config['syncdelete']) && $config['syncdelete']) {
+        if ($attachment['storage'] == 'r2' && isset($config['syncdelete']) && $config['syncdelete']) {
             // 删除云存储端文件
             try {
-                $ossClient = new OssClient($config['accessKeyId'], $config['accessKeySecret'], $config['endpoint']);
-                $ossClient->deleteObject($config['bucket'], ltrim($attachment->url, '/'));
-            } catch (OssException $e) {
+                $s3Client = new S3Client($config['accessKeyId'], $config['secretAccessKey'], $config['endpoint'], $config['region']);
+                $s3Client->deleteObject($config['bucket'], ltrim($attachment->url, '/'));
+            } catch (\Exception $e) {
                 return false;
             }
 

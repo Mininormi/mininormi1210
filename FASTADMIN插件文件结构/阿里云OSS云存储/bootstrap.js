@@ -1,4 +1,4 @@
-if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'alioss') {
+if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'r2') {
     require(['upload'], function (Upload) {
         //获取文件MD5值
         var getFileMd5 = function (file, cb) {
@@ -45,8 +45,8 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
         //初始化中完成判断
         Upload.events.onInit = function () {
             _onInit.apply(this, Array.prototype.slice.apply(arguments));
-            //如果上传接口不是阿里OSS，则不处理
-            if (this.options.url !== Config.upload.uploadurl) {
+            //如果上传接口不是R2，则不处理
+            if (this.options.url !== Config.upload.uploadurl && Config.upload.uploadmode !== 'client') {
                 return;
             }
             $.extend(this.options, {
@@ -76,14 +76,21 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
                     return params;
                 },
                 chunkSuccess: function (chunk, file, response) {
-                    var etag = chunk.xhr.getResponseHeader("ETag").replace(/(^")|("$)/g, '');
+                    // S3返回的ETag在响应头中
+                    var etag = chunk.xhr.getResponseHeader("ETag");
+                    if (etag) {
+                        etag = etag.replace(/(^")|("$)/g, '');
+                    } else {
+                        // 如果没有ETag，尝试从响应中获取
+                        etag = response || '';
+                    }
                     file.etags = file.etags ? file.etags : [];
                     file.etags[chunk.index] = etag;
                 },
                 chunksUploaded: function (file, done) {
                     var that = this;
                     Fast.api.ajax({
-                        url: "/addons/alioss/index/upload",
+                        url: "/addons/r2/index/upload",
                         data: {
                             action: 'merge',
                             filesize: file.size,
@@ -95,7 +102,7 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
                             uploadId: file.uploadId,
                             etags: file.etags,
                             category: file.category || '',
-                            aliosstoken: Config.upload.multipart.aliosstoken,
+                            r2token: Config.upload.multipart.r2token,
                         },
                     }, function (data, ret) {
                         done(JSON.stringify(ret));
@@ -117,14 +124,14 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
                     if (response) {
                         ret = typeof response === 'string' ? JSON.parse(response) : response;
                     }
-                    if (file.xhr.status === 200) {
+                    if (file.xhr && file.xhr.status === 200) {
                         if (Config.upload.uploadmode === 'client') {
                             ret = {code: 1, data: {url: '/' + file.key}};
                             var url = ret.data.url || '';
 
                             Fast.api.ajax({
-                                url: "/addons/alioss/index/notify",
-                                data: {name: file.name, url: url, md5: file.md5, size: file.size, width: file.width || 0, height: file.height || 0, type: file.type, category: file.category || '', aliosstoken: Config.upload.multipart.aliosstoken}
+                                url: "/addons/r2/index/notify",
+                                data: {name: file.name, url: url, md5: file.md5, size: file.size, width: file.width || 0, height: file.height || 0, type: file.type, category: file.category || '', r2token: Config.upload.multipart.r2token}
                             }, function () {
                                 return false;
                             }, function () {
@@ -152,17 +159,15 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
                         var category = typeof params.category !== 'undefined' ? params.category : ($(that.element).data("category") || '');
                         category = typeof category === 'function' ? category.call(that, file) : category;
                         Fast.api.ajax({
-                            url: "/addons/alioss/index/params",
-                            data: {method: 'POST', category: category, md5: md5, name: file.name, type: file.type, size: file.size, chunk: chunk, chunksize: that.options.chunkSize, aliosstoken: Config.upload.multipart.aliosstoken},
+                            url: "/addons/r2/index/params",
+                            data: {method: 'POST', category: category, md5: md5, name: file.name, type: file.type, size: file.size, chunk: chunk, chunksize: that.options.chunkSize, r2token: Config.upload.multipart.r2token},
                         }, function (data) {
                             file.md5 = md5;
                             file.id = data.id;
                             file.key = data.key;
-                            file.date = data.date;
+                            file.url = data.url; // presigned URL
                             file.uploadId = data.uploadId;
-                            file.policy = data.policy;
-                            file.signature = data.signature;
-                            file.partsAuthorization = data.partsAuthorization;
+                            file.partUrls = data.partUrls || [];
                             file.params = data;
                             file.category = category;
 
@@ -185,17 +190,7 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
                 var _url = this.options.url;
                 this.options.method = function (files) {
                     if (files[0].upload.chunked) {
-                        var chunk = null;
-                        files[0].upload.chunks.forEach(function (item) {
-                            if (item.status === 'uploading') {
-                                chunk = item;
-                            }
-                        });
-                        if (!chunk) {
-                            return "POST";
-                        } else {
-                            return "PUT";
-                        }
+                        return "PUT";
                     }
                     return _method;
                 };
@@ -207,16 +202,15 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
                                 chunk = item;
                             }
                         });
-                        var index = chunk.dataBlock.chunkIndex;
-                        // debugger;
-                        this.options.headers = {"Authorization": "OSS " + files[0]['id'] + ":" + files[0]['partsAuthorization'][index], "x-oss-date": files[0]['date']};
-                        if (!chunk) {
-                            return Config.upload.uploadurl + "/" + files[0].key + "?uploadId=" + files[0].uploadId;
-                        } else {
-                            return Config.upload.uploadurl + "/" + files[0].key + "?partNumber=" + (index + 1) + "&uploadId=" + files[0].uploadId;
+                        if (chunk && files[0].partUrls && files[0].partUrls[chunk.index]) {
+                            // 使用presigned URL
+                            return files[0].partUrls[chunk.index];
                         }
+                        // 如果没有presigned URL，回退到服务器中转
+                        return Config.upload.uploadurl + "/" + files[0].key + "?partNumber=" + (chunk.index + 1) + "&uploadId=" + files[0].uploadId;
                     }
-                    return _url;
+                    // 普通上传使用presigned URL
+                    return files[0].url || _url;
                 };
                 this.on("sending", function (file, xhr, formData) {
                     var that = this;
@@ -230,8 +224,24 @@ if (typeof Config.upload.storage !== 'undefined' && Config.upload.storage === 'a
                                 }
                             });
                             if (chunk) {
+                                // S3需要直接发送文件数据，不需要formData
                                 _send.call(xhr, chunk.dataBlock.data);
                             }
+                        };
+                    } else {
+                        // 普通上传：直接发送文件Blob，不使用formData
+                        // 注意：Dropzone/Upload库会自动处理文件上传，这里只需要确保使用正确的URL
+                        // 如果需要手动发送，可以使用以下代码：
+                        var _send = xhr.send;
+                        xhr.send = function () {
+                            // 获取文件的Blob对象
+                            var fileBlob = file;
+                            if (file.upload && file.upload.file) {
+                                fileBlob = file.upload.file;
+                            } else if (file instanceof File) {
+                                fileBlob = file;
+                            }
+                            _send.call(xhr, fileBlob);
                         };
                     }
                 });

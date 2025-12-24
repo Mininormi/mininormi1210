@@ -178,10 +178,13 @@ class Config extends Model
         $uploadcfg['fullmode'] = isset($uploadcfg['fullmode']) && $uploadcfg['fullmode'];
         $uploadcfg['thumbstyle'] = $uploadcfg['thumbstyle'] ?? '';
 
+        // 获取存储类型配置
+        $storage = $uploadcfg['storage'] ?? 'local';
+        
         $upload = [
             'cdnurl'     => $uploadcfg['cdnurl'],
             'uploadurl'  => $uploadurl,
-            'bucket'     => 'local',
+            'bucket'     => $storage == 'r2' ? (\think\Config::get('r2.bucket') ?? 'local') : 'local',
             'maxsize'    => $uploadcfg['maxsize'],
             'mimetype'   => $uploadcfg['mimetype'],
             'chunking'   => $uploadcfg['chunking'],
@@ -191,7 +194,7 @@ class Config extends Model
             'multiple'   => $uploadcfg['multiple'],
             'fullmode'   => $uploadcfg['fullmode'],
             'thumbstyle' => $uploadcfg['thumbstyle'],
-            'storage'    => 'local'
+            'storage'    => $storage
         ];
         return $upload;
     }
