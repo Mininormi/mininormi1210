@@ -2,6 +2,19 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
 
     var Controller = {
         index: function () {
+            // 自动切换到指定的 tab（从 URL 参数 tab 读取）
+            var urlParams = new URLSearchParams(window.location.search);
+            var tabParam = urlParams.get('tab');
+            if (tabParam) {
+                // 延迟执行，确保 DOM 已渲染
+                setTimeout(function() {
+                    var tabLink = $('a[href="#tab-' + tabParam + '"]');
+                    if (tabLink.length > 0) {
+                        tabLink.tab('show');
+                    }
+                }, 100);
+            }
+            
             $("form.edit-form").data("validator-options", {
                 display: function (elem) {
                     return $(elem).closest('tr').find("td:first").text();

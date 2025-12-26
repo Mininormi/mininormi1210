@@ -403,11 +403,16 @@ class Upload
         $category = array_key_exists($category, config('site.attachmentcategory') ?? []) ? $category : '';
         $auth = Auth::instance();
         // 获取存储类型配置（默认为 local）
-        $storage = Config::get('upload.storage', 'local');
+        // 先尝试读取完整配置，然后从数组中获取 storage
+        $uploadConfig = Config::get('upload', []);
+        $storage = isset($uploadConfig['storage']) ? $uploadConfig['storage'] : (Config::get('upload.storage', 'local'));
+        \think\Log::write('[R2 Debug] Upload::upload - Read storage=' . $storage . ' (type: ' . gettype($storage) . ')', 'info');
+        \think\Log::write('[R2 Debug] Upload::upload - Full upload config=' . json_encode($uploadConfig), 'info');
         
         // 如果 storage 为 null，使用默认值 'local'
         if (is_null($storage) || $storage === '') {
             $storage = 'local';
+            \think\Log::write('[R2 Debug] Upload::upload - Storage was empty, set to local', 'warning');
         }
         
         $params = array(
@@ -427,6 +432,8 @@ class Upload
             'sha1'        => $sha1,
             'extparam'    => '',
         );
+        \think\Log::write('[R2 Debug] Upload::upload - Attachment params[storage]=' . $params['storage'] . ', url=' . $params['url'], 'info');
+        
         $attachment = new Attachment();
         // 确保 storage 不被过滤掉（array_filter 会过滤 null、false、''）
         $filteredParams = array_filter($params, function($value, $key) {

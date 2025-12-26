@@ -287,15 +287,16 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                             },
                             chunksUploaded: function (file, done) {
                                 var that = this;
+                                var mergeParams = $.extend({}, multipart, {
+                                    action: 'merge',
+                                    filesize: file.size,
+                                    filename: file.name,
+                                    chunkid: file.upload.uuid,
+                                    chunkcount: file.upload.totalChunkCount,
+                                });
                                 Fast.api.ajax({
                                     url: this.options.url,
-                                    data: $.extend({}, multipart, {
-                                        action: 'merge',
-                                        filesize: file.size,
-                                        filename: file.name,
-                                        chunkid: file.upload.uuid,
-                                        chunkcount: file.upload.totalChunkCount,
-                                    })
+                                    data: mergeParams
                                 }, function (data, ret) {
                                     done(JSON.stringify(ret));
                                     return false;

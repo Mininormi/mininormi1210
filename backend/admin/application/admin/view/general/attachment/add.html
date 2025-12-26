@@ -1,5 +1,5 @@
 <form id="add-form" class="form-horizontal form-ajax" role="form" data-toggle="validator" method="POST" action="">
-    {if $config.upload.cdnurl}
+    {if $config.upload.cdnurl && $config.upload.storage != 'local'}
     <div class="form-group">
         <label for="c-third" class="control-label col-xs-12 col-sm-2">{:__('Upload to third')}:</label>
         <div class="col-xs-12 col-sm-8">
@@ -27,6 +27,7 @@
     </div>
     {/if}
 
+    {if $config.upload.storage == 'local'}
     <div class="form-group">
         <label for="c-local" class="control-label col-xs-12 col-sm-2">{:__('Upload to local')}:</label>
         <div class="col-xs-12 col-sm-8">
@@ -46,12 +47,13 @@
                     {/foreach}
                 </select>
             </div>
-            <button type="button" id="faupload-local" class="btn btn-primary faupload" data-input-id="c-local" data-multiple="true" data-preview-id="p-local" data-url="{:url('ajax/upload')}" data-cdnurl=""><i class="fa fa-upload"></i> {:__("Upload to local")}</button>
+            <button type="button" id="faupload-local" class="btn btn-primary faupload" data-input-id="c-local" data-multiple="true" data-preview-id="p-local"><i class="fa fa-upload"></i> {:__("Upload to local")}</button>
             {if $config.upload.chunking}
-            <button type="button" id="faupload-local-chunking" class="btn btn-primary faupload" data-chunking="true" data-maxsize="1gb" data-input-id="c-local" data-multiple="true" data-preview-id="p-local" data-url="{:url('ajax/upload')}" data-cdnurl=""><i class="fa fa-upload"></i> {:__("Upload to local by chunk")}</button>
+            <button type="button" id="faupload-local-chunking" class="btn btn-primary faupload" data-chunking="true" data-maxsize="1gb" data-input-id="c-local" data-multiple="true" data-preview-id="p-local"><i class="fa fa-upload"></i> {:__("Upload to local by chunk")}</button>
             {/if}
         </div>
     </div>
+    {/if}
 
     <div class="form-group hidden layer-footer">
         <div class="col-xs-2"></div>

@@ -67,7 +67,13 @@ class Attachment extends Backend
 
             $cdnurl = preg_replace("/\/(\w+)\.php$/i", '', $this->request->root());
             foreach ($list as $k => &$v) {
-                $v['fullurl'] = ($v['storage'] == 'local' ? $cdnurl : $this->view->config['upload']['cdnurl']) . $v['url'];
+                // 预览始终使用本地链接（节省 R2 读取次数）
+                // R2 的完整 URL 存储在 r2_url 字段中
+                $v['fullurl'] = $cdnurl . $v['url'];
+                // 如果存在 r2_url，也返回给前端（可选显示）
+                if (isset($v['r2_url']) && !empty($v['r2_url'])) {
+                    $v['r2_url_display'] = $v['r2_url'];
+                }
             }
             unset($v);
             $result = array("total" => $list->total(), "rows" => $list->items());

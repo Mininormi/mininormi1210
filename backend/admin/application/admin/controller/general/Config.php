@@ -75,10 +75,34 @@ class Config extends Backend
             }
             $siteList[$v['group']]['list'][] = $value;
         }
+        // 确定默认激活的 tab
+        // 如果 URL 中有 tab 参数，则使用该参数；否则默认激活第一个非 R2 的 tab
+        $defaultTab = $this->request->get('tab', '');
         $index = 0;
+        $hasSetActive = false;
         foreach ($siteList as $k => &$v) {
-            $v['active'] = !$index ? true : false;
+            if ($defaultTab) {
+                // 如果 URL 中有 tab 参数，则激活对应的 tab
+                $v['active'] = ($k === $defaultTab);
+                if ($v['active']) {
+                    $hasSetActive = true;
+                }
+            } else {
+                // 如果没有 tab 参数，默认激活第一个非 R2 的 tab
+                if ($k !== 'r2' && !$hasSetActive) {
+                    $v['active'] = true;
+                    $hasSetActive = true;
+                } else {
+                    $v['active'] = false;
+                }
+            }
             $index++;
+        }
+        // 如果 URL 中有 tab 参数但没有找到对应的 tab，则激活第一个 tab
+        if ($defaultTab && !$hasSetActive) {
+            reset($siteList);
+            $firstKey = key($siteList);
+            $siteList[$firstKey]['active'] = true;
         }
         $this->view->assign('siteList', $siteList);
         $this->view->assign('typeList', ConfigModel::getTypeList());

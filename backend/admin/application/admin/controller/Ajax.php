@@ -12,6 +12,7 @@ use think\Config;
 use think\Db;
 use think\Lang;
 use think\Loader;
+use think\Log;
 use think\Response;
 use think\Validate;
 
@@ -73,6 +74,86 @@ class Ajax extends Backend
 
         //必须还原upload配置,否则分片及cdnurl函数计算错误
         Config::load(APP_PATH . 'extra/upload.php', 'upload');
+        Log::write('[R2 Debug] Ajax upload - After load upload.php, storage=' . Config::get('upload.storage', 'NOT_SET'), 'info');
+        
+        // 合并后台配置的策略项（如果存在）
+        $siteConfig = Config::get('site');
+        Log::write('[R2 Debug] Ajax upload - siteConfig r2_upload_storage=' . (isset($siteConfig['r2_upload_storage']) ? $siteConfig['r2_upload_storage'] : 'NOT_SET'), 'info');
+        
+        if (!empty($siteConfig)) {
+            $uploadConfig = Config::get('upload', []);
+            
+            // 特殊处理 r2_upload_storage：如果是 select 类型，需要将索引转换为实际值
+            if (isset($siteConfig['r2_upload_storage']) && $siteConfig['r2_upload_storage'] !== '') {
+                $storageValue = $siteConfig['r2_upload_storage'];
+                Log::write('[R2 Debug] Ajax upload - Raw storageValue=' . $storageValue . ' (type: ' . gettype($storageValue) . ')', 'info');
+                
+                $configModel = \app\common\model\Config::get(['name' => 'r2_upload_storage']);
+                if ($configModel && $configModel->type === 'select') {
+                    $content = json_decode($configModel->content, true);
+                    Log::write('[R2 Debug] Ajax upload - Config model found, type=' . $configModel->type . ', content=' . json_encode($content), 'info');
+                    
+                    if (is_array($content)) {
+                        $index = (int)$storageValue;
+                        Log::write('[R2 Debug] Ajax upload - Converted index=' . $index . ', content count=' . count($content) . ', has index=' . (isset($content[$index]) ? 'YES' : 'NO'), 'info');
+                        
+                        if (isset($content[$index])) {
+                            $storageValue = $content[$index];
+                            Log::write('[R2 Debug] Ajax upload - Converted storageValue=' . $storageValue, 'info');
+                        } else {
+                            Log::write('[R2 Debug] Ajax upload - ERROR: Index ' . $index . ' not found in content array!', 'error');
+                        }
+                    }
+                } else {
+                    Log::write('[R2 Debug] Ajax upload - Config model not found or not select type', 'warning');
+                }
+                $uploadConfig['storage'] = $storageValue;
+                Log::write('[R2 Debug] Ajax upload - Set uploadConfig[storage]=' . $storageValue, 'info');
+            } else {
+                Log::write('[R2 Debug] Ajax upload - r2_upload_storage not set in siteConfig', 'warning');
+            }
+            
+            // 映射后台配置到 upload 配置
+            $configMap = [
+                'r2_upload_maxsize' => 'maxsize',
+                'r2_upload_mimetype' => 'mimetype',
+                'r2_upload_multiple' => 'multiple',
+                'r2_upload_chunking' => 'chunking',
+                'r2_upload_chunksize' => 'chunksize',
+                'r2_upload_timeout' => 'timeout',
+                'r2_upload_savekey' => 'savekey',
+                'r2_upload_fullmode' => 'fullmode',
+                'r2_upload_thumbstyle' => 'thumbstyle',
+            ];
+            foreach ($configMap as $siteKey => $uploadKey) {
+                if (isset($siteConfig[$siteKey]) && $siteConfig[$siteKey] !== '') {
+                    // switch 类型需要转换为布尔值
+                    if (in_array($siteKey, ['r2_upload_multiple', 'r2_upload_chunking', 'r2_upload_fullmode'])) {
+                        $uploadConfig[$uploadKey] = (bool)$siteConfig[$siteKey];
+                    } else {
+                        $uploadConfig[$uploadKey] = $siteConfig[$siteKey];
+                    }
+                }
+            }
+            Config::set('upload', $uploadConfig);
+            // 同时设置 upload.storage 以便 Config::get('upload.storage') 能正确读取
+            if (isset($uploadConfig['storage'])) {
+                Config::set('upload.storage', $uploadConfig['storage']);
+            }
+            Log::write('[R2 Debug] Ajax upload - Final uploadConfig[storage]=' . (isset($uploadConfig['storage']) ? $uploadConfig['storage'] : 'NOT_SET'), 'info');
+            Log::write('[R2 Debug] Ajax upload - Config::get(upload.storage)=' . Config::get('upload.storage', 'NOT_SET'), 'info');
+            
+            // 如果存储类型是 r2，设置 cdnurl（从 r2 配置读取）
+            if (isset($uploadConfig['storage']) && $uploadConfig['storage'] === 'r2') {
+                $r2Config = Config::get('r2');
+                Log::write('[R2 Debug] Ajax upload - R2 config found, cdnurl=' . (isset($r2Config['cdnurl']) ? $r2Config['cdnurl'] : 'NOT_SET'), 'info');
+                if (!empty($r2Config['cdnurl'])) {
+                    Config::set('upload.cdnurl', $r2Config['cdnurl']);
+                }
+            }
+        } else {
+            Log::write('[R2 Debug] Ajax upload - siteConfig is empty', 'warning');
+        }
 
         $chunkid = $this->request->post("chunkid");
         if ($chunkid) {

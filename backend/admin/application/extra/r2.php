@@ -39,3 +39,4 @@ return [
     // 缩略图样式（可选）
     'thumbstyle' => getenv('R2_THUMBSTYLE') ?: '',
 ];
+

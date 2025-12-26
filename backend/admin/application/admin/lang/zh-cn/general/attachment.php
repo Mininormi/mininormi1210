@@ -32,10 +32,13 @@ return [
     'Filter Type'              => '类型筛选',
     'Upload to third'          => '上传到第三方',
     'Upload to local'          => '上传到本地',
+    'Upload to R2'             => '上传到R2',
     'Upload to third by chunk' => '上传到第三方(分片模式)',
     'Upload to local by chunk' => '上传到本地(分片模式)',
+    'Upload to R2 by chunk'    => '上传到R2(分片模式)',
     'Please enter a new name'  => '请输入新的类别名称',
     'Please select category'   => '请选择一个类别',
     'Category not found'       => '指定的类别未找到',
-    'Upload from editor'       => '从编辑器上传'
+    'Upload from editor'       => '从编辑器上传',
+    'R2 Url'                   => 'R2链接',
 ];

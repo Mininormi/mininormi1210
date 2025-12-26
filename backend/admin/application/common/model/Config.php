@@ -181,8 +181,17 @@ class Config extends Model
         // 获取存储类型配置
         $storage = $uploadcfg['storage'] ?? 'local';
         
+        // 如果存储类型是 r2，从 r2 配置读取 cdnurl
+        $cdnurl = $uploadcfg['cdnurl'] ?? '';
+        if ($storage === 'r2') {
+            $r2Config = \think\Config::get('r2');
+            if (!empty($r2Config['cdnurl'])) {
+                $cdnurl = $r2Config['cdnurl'];
+            }
+        }
+        
         $upload = [
-            'cdnurl'     => $uploadcfg['cdnurl'],
+            'cdnurl'     => $cdnurl,
             'uploadurl'  => $uploadurl,
             'bucket'     => $storage == 'r2' ? (\think\Config::get('r2.bucket') ?? 'local') : 'local',
             'maxsize'    => $uploadcfg['maxsize'],
