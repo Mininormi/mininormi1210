@@ -1,5 +1,15 @@
 [
     "mini_accessory.category222",
     "mini_accessory.category333",
-    "mini_vehicle_make.name"
+    "mini_vehicle_make.name",
+    "mini_accessory.compatibility",
+    "mini_wheel_product.is_featured",
+    "mini_wheel_product.is_new",
+    "mini_wheel_product.winter_approved",
+    "mini_wheel_product_spec.tpms_compatible",
+    "mini_user_address.is_shippable",
+    "mini_user_address.deleted_at",
+    "mini_order_address_snapshot.is_shippable",
+    "mini_user_address.is_default",
+    "mini_user_address.defaultswitch"
 ]

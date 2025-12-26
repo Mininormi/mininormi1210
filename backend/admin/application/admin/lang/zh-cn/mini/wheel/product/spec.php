@@ -16,13 +16,12 @@ return [
     'Bolt_hole_diameter_mm' => '螺栓/螺柱通孔孔径（mm,如 14.5）',
     'Weight_kg'             => '单只轮毂重量（公斤,如：9.5）',
     'Load_rating_kg'        => '单只载重（公斤,如：690）',
-    'Tpms_compatible'       => '是否支持TPMS胎压传感器',
+    'Tpmscompatibleswitch'  => '是否支持TPMS胎压传感器',
     'Sale_price'            => '售价',
     'Original_price'        => '原价',
     'Stock'                 => '此规格库存',
     'Status'                => '状态',
     'Weigh'                 => '排序',
     'Createtime'            => '创建时间',
-    'Updatetime'            => '更新时间',
-    'Product.name'          => '产品名称'
+    'Updatetime'            => '更新时间'
 ];

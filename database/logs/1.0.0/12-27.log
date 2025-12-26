@@ -1,0 +1,568 @@
+
+================================================================================
+执行时间: 2025-12-27 03:49:19
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+[预览模式 - 不会实际执行 SQL]
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+警告信息:
+  ⚠ ⚠ 表 mini_accessory 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+  ⚠ ⚠ 表 mini_gallery 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+
+待删除字段（需要手动处理）:
+  ⚠ 表: mini_accessory, 字段: compatibility (text)
+  ⚠ 表: mini_wheel_product, 字段: center_cap_included (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: hub_ring_included (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: is_featured (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: is_new (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: winter_approved (tinyint(1))
+  ⚠ 表: mini_wheel_product_spec, 字段: tpms_compatible (tinyint(1))
+  ⚠ 表: mini_user_address, 字段: is_default (tinyint(1))
+  ⚠ 表: mini_order_address_snapshot, 字段: is_shippable (tinyint(1))
+  提示: 请在 Adminer 或命令行中手动删除，然后点击 Web UI 中的"已处理"按钮
+
+发现 15 个需要执行的 SQL 语句:
+
+SQL #1:
+ALTER TABLE `mini_accessory`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  ADD COLUMN `compatibilityjson` varchar(2000) DEFAULT NULL COMMENT '兼容性(JSON格式)' AFTER `description`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #2:
+ALTER TABLE `mini_wheel_brand`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #3:
+ALTER TABLE `mini_cart`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #4:
+ALTER TABLE `mini_customer`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #5:
+ALTER TABLE `mini_gallery`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #6:
+ALTER TABLE `mini_order`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #7:
+ALTER TABLE `mini_wheel_product`
+  ADD COLUMN `centercapswitch` tinyint DEFAULT 0 COMMENT '是否带中心盖' AFTER `finish_name`,
+  ADD COLUMN `hubringswitch` tinyint DEFAULT 0 COMMENT '是否带中心环' AFTER `centercapswitch`,
+  ADD COLUMN `featuredswitch` tinyint DEFAULT 0 COMMENT '是否推荐' AFTER `status`,
+  ADD COLUMN `newswitch` tinyint DEFAULT 0 COMMENT '是否新品' AFTER `featuredswitch`,
+  ADD COLUMN `winterapprovedswitch` tinyint DEFAULT 0 COMMENT '是否冬季认证' AFTER `newswitch`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间',
+  DROP INDEX `is_featured`,
+  DROP INDEX `is_new`,
+  ADD KEY `featuredswitch` (`featuredswitch`),
+  ADD KEY `newswitch` (`newswitch`);
+
+SQL #8:
+ALTER TABLE `mini_wheel_product_spec`
+  ADD COLUMN `tpmscompatibleswitch` tinyint DEFAULT 0 COMMENT '是否支持TPMS胎压传感器' AFTER `load_rating_kg`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #9:
+ALTER TABLE `mini_product_tag`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #10:
+ALTER TABLE `mini_vehicle_year`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #11:
+ALTER TABLE `mini_vehicle_make`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #12:
+ALTER TABLE `mini_vehicle_model`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #13:
+ALTER TABLE `mini_vehicle_detail`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #14:
+ALTER TABLE `mini_user_address`
+  ADD COLUMN `defaultswitch` tinyint NOT NULL DEFAULT 0 COMMENT '是否默认地址（同用户同类型仅允许1个默认，事务保证）' AFTER `address_type`,
+  MODIFY COLUMN `is_shippable` tinyint NOT NULL DEFAULT '1' COMMENT '是否可配送（预留边界）',
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间',
+  DROP INDEX `idx_user_active`,
+  ADD KEY `idx_user_active` (`user_id`, `deletetime`),
+  DROP INDEX `idx_user_type_active`,
+  ADD KEY `idx_user_type_active` (`user_id`, `address_type`, `deletetime`),
+  DROP INDEX `idx_user_type_default`,
+  ADD KEY `idx_user_type_default` (`user_id`, `address_type`, `defaultswitch`, `deletetime`);
+
+SQL #15:
+ALTER TABLE `mini_order_address_snapshot`
+  ADD COLUMN `shippableswitch` tinyint NOT NULL DEFAULT 1 COMMENT '是否可配送（快照）' AFTER `shipping_zone`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间（快照生成时间）';
+
+========================================
+[预览模式] 以上 SQL 未实际执行
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 03:54:31
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+[预览模式 - 不会实际执行 SQL]
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+警告信息:
+  ⚠ ⚠ 表 mini_accessory 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+  ⚠ ⚠ 表 mini_gallery 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+
+待删除字段（需要手动处理）:
+  ⚠ 表: mini_accessory, 字段: compatibility (text)
+  ⚠ 表: mini_wheel_product, 字段: is_featured (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: is_new (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: winter_approved (tinyint(1))
+  ⚠ 表: mini_wheel_product_spec, 字段: tpms_compatible (tinyint(1))
+  ⚠ 表: mini_user_address, 字段: is_shippable (tinyint(1))
+  ⚠ 表: mini_user_address, 字段: deleted_at (int)
+  ⚠ 表: mini_order_address_snapshot, 字段: is_shippable (tinyint(1))
+  提示: 请在 Adminer 或命令行中手动删除，然后点击 Web UI 中的"已处理"按钮
+
+发现 11 个需要执行的 SQL 语句:
+
+SQL #1:
+ALTER TABLE `mini_accessory`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  ADD COLUMN `compatibilityjson` varchar(2000) DEFAULT NULL COMMENT '兼容性(JSON格式)' AFTER `description`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #2:
+ALTER TABLE `mini_wheel_brand`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #3:
+ALTER TABLE `mini_cart`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #4:
+ALTER TABLE `mini_gallery`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #5:
+ALTER TABLE `mini_order_item`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间';
+
+SQL #6:
+ALTER TABLE `mini_wheel_product`
+  ADD COLUMN `featuredswitch` tinyint DEFAULT 0 COMMENT '是否推荐' AFTER `status`,
+  ADD COLUMN `newswitch` tinyint DEFAULT 0 COMMENT '是否新品' AFTER `featuredswitch`,
+  ADD COLUMN `winterapprovedswitch` tinyint DEFAULT 0 COMMENT '是否冬季认证' AFTER `newswitch`;
+
+SQL #7:
+ALTER TABLE `mini_wheel_product_spec`
+  ADD COLUMN `tpmscompatibleswitch` tinyint DEFAULT 0 COMMENT '是否支持TPMS胎压传感器' AFTER `load_rating_kg`;
+
+SQL #8:
+ALTER TABLE `mini_product_tag`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #9:
+ALTER TABLE `mini_product_tag_relation`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间';
+
+SQL #10:
+ALTER TABLE `mini_user_address`
+  ADD COLUMN `shippableswitch` tinyint NOT NULL DEFAULT 1 COMMENT '是否可配送（预留边界）' AFTER `shipping_zone`,
+  ADD COLUMN `deletetime` bigint DEFAULT NULL COMMENT '删除时间（NULL=未删除）' AFTER `shippableswitch`;
+
+SQL #11:
+ALTER TABLE `mini_order_address_snapshot`
+  ADD COLUMN `shippableswitch` tinyint NOT NULL DEFAULT 1 COMMENT '是否可配送（快照）' AFTER `shipping_zone`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间（快照生成时间）';
+
+========================================
+[预览模式] 以上 SQL 未实际执行
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 03:54:52
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+[预览模式 - 不会实际执行 SQL]
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+警告信息:
+  ⚠ ⚠ 表 mini_accessory 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+  ⚠ ⚠ 表 mini_gallery 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+
+待删除字段（需要手动处理）:
+  ⚠ 表: mini_accessory, 字段: compatibility (text)
+  ⚠ 表: mini_wheel_product, 字段: is_featured (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: is_new (tinyint(1))
+  ⚠ 表: mini_wheel_product, 字段: winter_approved (tinyint(1))
+  ⚠ 表: mini_wheel_product_spec, 字段: tpms_compatible (tinyint(1))
+  ⚠ 表: mini_user_address, 字段: is_shippable (tinyint(1))
+  ⚠ 表: mini_user_address, 字段: deleted_at (int)
+  ⚠ 表: mini_order_address_snapshot, 字段: is_shippable (tinyint(1))
+  提示: 请在 Adminer 或命令行中手动删除，然后点击 Web UI 中的"已处理"按钮
+
+发现 11 个需要执行的 SQL 语句:
+
+SQL #1:
+ALTER TABLE `mini_accessory`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  ADD COLUMN `compatibilityjson` varchar(2000) DEFAULT NULL COMMENT '兼容性(JSON格式)' AFTER `description`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #2:
+ALTER TABLE `mini_wheel_brand`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #3:
+ALTER TABLE `mini_cart`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #4:
+ALTER TABLE `mini_gallery`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #5:
+ALTER TABLE `mini_order_item`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间';
+
+SQL #6:
+ALTER TABLE `mini_wheel_product`
+  ADD COLUMN `featuredswitch` tinyint DEFAULT 0 COMMENT '是否推荐' AFTER `status`,
+  ADD COLUMN `newswitch` tinyint DEFAULT 0 COMMENT '是否新品' AFTER `featuredswitch`,
+  ADD COLUMN `winterapprovedswitch` tinyint DEFAULT 0 COMMENT '是否冬季认证' AFTER `newswitch`;
+
+SQL #7:
+ALTER TABLE `mini_wheel_product_spec`
+  ADD COLUMN `tpmscompatibleswitch` tinyint DEFAULT 0 COMMENT '是否支持TPMS胎压传感器' AFTER `load_rating_kg`;
+
+SQL #8:
+ALTER TABLE `mini_product_tag`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #9:
+ALTER TABLE `mini_product_tag_relation`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间';
+
+SQL #10:
+ALTER TABLE `mini_user_address`
+  ADD COLUMN `shippableswitch` tinyint NOT NULL DEFAULT 1 COMMENT '是否可配送（预留边界）' AFTER `shipping_zone`,
+  ADD COLUMN `deletetime` bigint DEFAULT NULL COMMENT '删除时间（NULL=未删除）' AFTER `shippableswitch`;
+
+SQL #11:
+ALTER TABLE `mini_order_address_snapshot`
+  ADD COLUMN `shippableswitch` tinyint NOT NULL DEFAULT 1 COMMENT '是否可配送（快照）' AFTER `shipping_zone`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间（快照生成时间）';
+
+========================================
+[预览模式] 以上 SQL 未实际执行
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 03:58:00
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+[预览模式 - 不会实际执行 SQL]
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+警告信息:
+  ⚠ ⚠ 表 mini_accessory 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+  ⚠ ⚠ 表 mini_gallery 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+
+发现 11 个需要执行的 SQL 语句:
+
+SQL #1:
+ALTER TABLE `mini_accessory`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  ADD COLUMN `compatibilityjson` varchar(2000) DEFAULT NULL COMMENT '兼容性(JSON格式)' AFTER `description`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #2:
+ALTER TABLE `mini_wheel_brand`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #3:
+ALTER TABLE `mini_cart`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #4:
+ALTER TABLE `mini_gallery`
+  MODIFY COLUMN `images` varchar(2000) DEFAULT NULL COMMENT '图片集',
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #5:
+ALTER TABLE `mini_order_item`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间';
+
+SQL #6:
+ALTER TABLE `mini_wheel_product`
+  ADD COLUMN `featuredswitch` tinyint DEFAULT 0 COMMENT '是否推荐' AFTER `status`,
+  ADD COLUMN `newswitch` tinyint DEFAULT 0 COMMENT '是否新品' AFTER `featuredswitch`,
+  ADD COLUMN `winterapprovedswitch` tinyint DEFAULT 0 COMMENT '是否冬季认证' AFTER `newswitch`,
+  ADD KEY `is_featured` (`is_featured`),
+  ADD KEY `is_new` (`is_new`);
+
+SQL #7:
+ALTER TABLE `mini_wheel_product_spec`
+  ADD COLUMN `tpmscompatibleswitch` tinyint DEFAULT 0 COMMENT '是否支持TPMS胎压传感器' AFTER `load_rating_kg`;
+
+SQL #8:
+ALTER TABLE `mini_product_tag`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间',
+  MODIFY COLUMN `updatetime` bigint DEFAULT NULL COMMENT '更新时间';
+
+SQL #9:
+ALTER TABLE `mini_product_tag_relation`
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间';
+
+SQL #10:
+ALTER TABLE `mini_user_address`
+  ADD COLUMN `shippableswitch` tinyint NOT NULL DEFAULT 1 COMMENT '是否可配送（预留边界）' AFTER `shipping_zone`,
+  ADD COLUMN `deletetime` bigint DEFAULT NULL COMMENT '删除时间（NULL=未删除）' AFTER `shippableswitch`,
+  DROP INDEX `idx_user_active`,
+  ADD KEY `idx_user_active` (`user_id`, `deleted_at`),
+  DROP INDEX `idx_user_type_active`,
+  ADD KEY `idx_user_type_active` (`user_id`, `address_type`, `deleted_at`),
+  DROP INDEX `idx_user_type_default`,
+  ADD KEY `idx_user_type_default` (`user_id`, `address_type`, `is_default`, `deleted_at`);
+
+SQL #11:
+ALTER TABLE `mini_order_address_snapshot`
+  ADD COLUMN `shippableswitch` tinyint NOT NULL DEFAULT 1 COMMENT '是否可配送（快照）' AFTER `shipping_zone`,
+  MODIFY COLUMN `createtime` bigint DEFAULT NULL COMMENT '创建时间（快照生成时间）';
+
+========================================
+[预览模式] 以上 SQL 未实际执行
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 03:58:14
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+警告信息:
+  ⚠ ⚠ 表 mini_accessory 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+  ⚠ ⚠ 表 mini_gallery 字段 images: 字段类型从 text 缩小到 varchar，可能导致数据丢失
+
+发现 11 个需要执行的 SQL 语句:
+
+执行 SQL #1...
+  ✓ 成功
+
+执行 SQL #2...
+  ✓ 成功
+
+执行 SQL #3...
+  ✓ 成功
+
+执行 SQL #4...
+  ✓ 成功
+
+执行 SQL #5...
+  ✓ 成功
+
+执行 SQL #6...
+  ✗ 失败: SQLSTATE[42000]: Syntax error or access violation: 1072 Key column 'is_featured' doesn't exist in table
+
+执行 SQL #7...
+  ✓ 成功
+
+执行 SQL #8...
+  ✓ 成功
+
+执行 SQL #9...
+  ✓ 成功
+
+执行 SQL #10...
+  ✗ 失败: SQLSTATE[42000]: Syntax error or access violation: 1072 Key column 'deleted_at' doesn't exist in table
+
+执行 SQL #11...
+  ✓ 成功
+
+========================================
+同步完成！
+成功: 9 个
+失败: 2 个
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 03:59:39
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+待删除字段（需要手动处理）:
+  ⚠ 表: mini_user_address, 字段: is_default (tinyint(1))
+  提示: 请在 Adminer 或命令行中手动删除，然后点击 Web UI 中的"已处理"按钮
+
+发现 2 个需要执行的 SQL 语句:
+
+执行 SQL #1...
+  ✓ 成功
+
+执行 SQL #2...
+  ✓ 成功
+
+========================================
+同步完成！
+成功: 2 个
+失败: 0 个
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 04:40:45
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+[预览模式 - 不会实际执行 SQL]
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+待删除字段（需要手动处理）:
+  ⚠ 表: mini_user_address, 字段: defaultswitch (tinyint)
+  ⚠ 表: mini_user_address, 字段: shippableswitch (tinyint)
+  ⚠ 表: mini_order_address_snapshot, 字段: shippableswitch (tinyint)
+  提示: 请在 Adminer 或命令行中手动删除，然后点击 Web UI 中的"已处理"按钮
+
+发现 2 个需要执行的 SQL 语句:
+
+SQL #1:
+ALTER TABLE `mini_user_address`
+  MODIFY COLUMN `is_default` int NOT NULL DEFAULT 0 COMMENT '是否默认地址（同用户同类型仅允许1个默认，事务保证）',
+  ADD COLUMN `is_shippable` int NOT NULL DEFAULT 1 COMMENT '是否可配送（预留边界）' AFTER `shipping_zone`,
+  DROP INDEX `idx_user_type_default`,
+  ADD KEY `idx_user_type_default` (`user_id`, `address_type`, `is_default`, `deletetime`);
+
+SQL #2:
+ALTER TABLE `mini_order_address_snapshot`
+  ADD COLUMN `is_shippable` int NOT NULL DEFAULT 1 COMMENT '是否可配送（快照）' AFTER `shipping_zone`;
+
+========================================
+[预览模式] 以上 SQL 未实际执行
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 04:42:10
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+[预览模式 - 不会实际执行 SQL]
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+发现 2 个需要执行的 SQL 语句:
+
+SQL #1:
+ALTER TABLE `mini_user_address`
+  MODIFY COLUMN `is_default` int NOT NULL DEFAULT 0 COMMENT '是否默认地址（同用户同类型仅允许1个默认，事务保证）',
+  ADD COLUMN `is_shippable` int NOT NULL DEFAULT 1 COMMENT '是否可配送（预留边界）' AFTER `shipping_zone`,
+  DROP INDEX `idx_user_type_default`,
+  ADD KEY `idx_user_type_default` (`user_id`, `address_type`, `is_default`, `deletetime`);
+
+SQL #2:
+ALTER TABLE `mini_order_address_snapshot`
+  ADD COLUMN `is_shippable` int NOT NULL DEFAULT 1 COMMENT '是否可配送（快照）' AFTER `shipping_zone`;
+
+========================================
+[预览模式] 以上 SQL 未实际执行
+========================================
+
+
+================================================================================
+执行时间: 2025-12-27 04:42:22
+================================================================================
+========================================
+数据库结构同步工具（Schema 热更新模式）
+========================================
+
+加载 Schema 文件: /var/www/database/schema.json
+Schema 版本: 1.0.0
+
+发现 2 个需要执行的 SQL 语句:
+
+执行 SQL #1...
+  ✓ 成功
+
+执行 SQL #2...
+  ✓ 成功
+
+========================================
+同步完成！
+成功: 2 个
+失败: 0 个
+========================================
+

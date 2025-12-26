@@ -3,12 +3,12 @@
 namespace app\admin\model\mini\user;
 
 use think\Model;
-
+use traits\model\SoftDelete;
 
 class Address extends Model
 {
 
-    
+    use SoftDelete;
 
     
 
@@ -21,7 +21,7 @@ class Address extends Model
     // 定义时间戳字段名
     protected $createTime = 'createtime';
     protected $updateTime = 'updatetime';
-    protected $deleteTime = false;
+    protected $deleteTime = 'deletetime';
 
     // 追加属性
     protected $append = [

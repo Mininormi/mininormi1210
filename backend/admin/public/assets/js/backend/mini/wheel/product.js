@@ -39,13 +39,12 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'hub_ring_included', title: __('Hub_ring_included')},
                         {field: 'design_style', title: __('Design_style'), operate: 'LIKE'},
                         {field: 'status', title: __('Status'), searchList: {"normal":__('Normal'),"hidden":__('Hidden'),"soldout":__('Soldout')}, formatter: Table.api.formatter.status},
-                        {field: 'is_featured', title: __('Is_featured')},
-                        {field: 'is_new', title: __('Is_new')},
-                        {field: 'winter_approved', title: __('Winter_approved')},
+                        {field: 'featuredswitch', title: __('Featuredswitch'), table: table, formatter: Table.api.formatter.toggle},
+                        {field: 'newswitch', title: __('Newswitch'), table: table, formatter: Table.api.formatter.toggle},
+                        {field: 'winterapprovedswitch', title: __('Winterapprovedswitch'), table: table, formatter: Table.api.formatter.toggle},
                         {field: 'weigh', title: __('Weigh'), operate: false},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
-                        {field: 'brand.name', title: __('Brand.name'), operate: 'LIKE'},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
                     ]
                 ]

@@ -16,11 +16,10 @@ return [
     'Hub_ring_included'     => '是否带中心环',
     'Design_style'          => '设计风格（SEO字段,如：Mesh, Spoke, Concave）',
     'Status'                => '状态',
-    'Is_featured'           => '是否推荐',
-    'Is_new'                => '是否新品',
-    'Winter_approved'       => '是否冬季认证',
+    'Featuredswitch'        => '是否推荐',
+    'Newswitch'             => '是否新品',
+    'Winterapprovedswitch'  => '是否冬季认证',
     'Weigh'                 => '排序',
     'Createtime'            => '创建时间',
-    'Updatetime'            => '更新时间',
-    'Brand.name'            => '品牌名称'
+    'Updatetime'            => '更新时间'
 ];

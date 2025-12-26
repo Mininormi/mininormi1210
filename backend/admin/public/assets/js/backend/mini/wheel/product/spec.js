@@ -42,7 +42,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'bolt_hole_diameter_mm', title: __('Bolt_hole_diameter_mm'), operate:'BETWEEN'},
                         {field: 'weight_kg', title: __('Weight_kg'), operate:'BETWEEN'},
                         {field: 'load_rating_kg', title: __('Load_rating_kg')},
-                        {field: 'tpms_compatible', title: __('Tpms_compatible')},
+                        {field: 'tpmscompatibleswitch', title: __('Tpmscompatibleswitch'), table: table, formatter: Table.api.formatter.toggle},
                         {field: 'sale_price', title: __('Sale_price'), operate:'BETWEEN'},
                         {field: 'original_price', title: __('Original_price'), operate:'BETWEEN'},
                         {field: 'stock', title: __('Stock')},
@@ -50,7 +50,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'weigh', title: __('Weigh'), operate: false},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, formatter: Table.api.formatter.datetime},
-                        {field: 'product.name', title: __('Product.name'), operate: 'LIKE'},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
                     ]
                 ]

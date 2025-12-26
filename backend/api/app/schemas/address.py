@@ -96,7 +96,7 @@ class AddressResponse(AddressBase):
     id: int
     user_id: int
     is_default: bool
-    deleted_at: Optional[int] = None
+    deletetime: Optional[int] = None
     createtime: Optional[int] = None
     updatetime: Optional[int] = None
 

@@ -21,7 +21,7 @@ return [
     'Tax_region'         => '税区标识（预留）',
     'Shipping_zone'      => '运费/配送区标识（预留）',
     'Is_shippable'       => '是否可配送（预留边界）',
-    'Deleted_at'         => '软删除时间戳（NULL=未删除）',
+    'Deletetime'         => '删除时间（NULL=未删除）',
     'Createtime'         => '创建时间',
     'Updatetime'         => '更新时间'
 ];

@@ -40,7 +40,7 @@
                     "comment": "主图"
                 },
                 "images": {
-                    "type": "text",
+                    "type": "varchar(2000)",
                     "null": true,
                     "comment": "图片集"
                 },
@@ -49,8 +49,8 @@
                     "null": true,
                     "comment": "描述"
                 },
-                "compatibility": {
-                    "type": "text",
+                "compatibilityjson": {
+                    "type": "varchar(2000)",
                     "null": true,
                     "comment": "兼容性(JSON格式)"
                 },
@@ -85,12 +85,12 @@
                     "comment": "排序"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 },
                 "updatetime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "更新时间"
                 }
@@ -150,7 +150,7 @@
                     "type": "enum('normal','hidden')",
                     "null": true,
                     "default": "normal",
-                    "comment": "状态"
+                    "comment": "状态:normal=正常,hidden=隐藏"
                 },
                 "weigh": {
                     "type": "int",
@@ -159,12 +159,12 @@
                     "comment": "排序"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 },
                 "updatetime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "更新时间"
                 }
@@ -227,12 +227,12 @@
                     "comment": "单价"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 },
                 "updatetime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "更新时间"
                 }
@@ -303,7 +303,7 @@
                     "type": "enum('normal','hidden')",
                     "null": true,
                     "default": "normal",
-                    "comment": "状态"
+                    "comment": "状态:normal=正常,hidden=隐藏"
                 },
                 "createtime": {
                     "type": "int",
@@ -375,7 +375,7 @@
                     "comment": "图片"
                 },
                 "images": {
-                    "type": "text",
+                    "type": "varchar(2000)",
                     "null": true,
                     "comment": "图片集"
                 },
@@ -388,7 +388,7 @@
                     "type": "enum('normal','hidden')",
                     "null": true,
                     "default": "normal",
-                    "comment": "状态"
+                    "comment": "状态:normal=正常,hidden=隐藏"
                 },
                 "weigh": {
                     "type": "int",
@@ -397,12 +397,12 @@
                     "comment": "排序"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 },
                 "updatetime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "更新时间"
                 }
@@ -521,13 +521,13 @@
                     "type": "enum('pending','paid','failed','refunded')",
                     "null": true,
                     "default": "pending",
-                    "comment": "支付状态"
+                    "comment": "支付状态:pending=待支付,paid=已支付,failed=支付失败,refunded=已退款"
                 },
                 "order_status": {
                     "type": "enum('pending','processing','shipped','delivered','cancelled')",
                     "null": true,
                     "default": "pending",
-                    "comment": "订单状态"
+                    "comment": "订单状态:pending=待处理,processing=处理中,shipped=已发货,delivered=已送达,cancelled=已取消"
                 },
                 "fitment_review": {
                     "type": "text",
@@ -641,7 +641,7 @@
                     "comment": "小计"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 }
@@ -744,22 +744,22 @@
                     "default": "normal",
                     "comment": "状态"
                 },
-                "is_featured": {
-                    "type": "tinyint(1)",
+                "featuredswitch": {
+                    "type": "tinyint",
                     "null": true,
-                    "default": "0",
+                    "default": 0,
                     "comment": "是否推荐"
                 },
-                "is_new": {
-                    "type": "tinyint(1)",
+                "newswitch": {
+                    "type": "tinyint",
                     "null": true,
-                    "default": "0",
+                    "default": 0,
                     "comment": "是否新品"
                 },
-                "winter_approved": {
-                    "type": "tinyint(1)",
+                "winterapprovedswitch": {
+                    "type": "tinyint",
                     "null": true,
-                    "default": "0",
+                    "default": 0,
                     "comment": "是否冬季认证"
                 },
                 "weigh": {
@@ -792,11 +792,11 @@
                 "status": [
                     "status"
                 ],
-                "is_featured": [
-                    "is_featured"
+                "featuredswitch": [
+                    "featuredswitch"
                 ],
-                "is_new": [
-                    "is_new"
+                "newswitch": [
+                    "newswitch"
                 ],
                 "design_style": [
                     "design_style"
@@ -870,7 +870,7 @@
                 "seat_type": {
                     "type": "enum('cone','ball','flat')",
                     "null": true,
-                    "comment": "螺丝/螺母底座类型"
+                    "comment": "螺丝/螺母底座类型:cone=锥形,ball=球形,flat=平面"
                 },
                 "bolt_hole_diameter_mm": {
                     "type": "decimal(5,2)",
@@ -887,10 +887,10 @@
                     "null": true,
                     "comment": "单只载重（公斤，如：690）"
                 },
-                "tpms_compatible": {
-                    "type": "tinyint(1)",
+                "tpmscompatibleswitch": {
+                    "type": "tinyint",
                     "null": true,
-                    "default": "0",
+                    "default": 0,
                     "comment": "是否支持TPMS胎压传感器"
                 },
                 "sale_price": {
@@ -988,7 +988,7 @@
                     "type": "enum('normal','hidden')",
                     "null": true,
                     "default": "normal",
-                    "comment": "状态"
+                    "comment": "状态:normal=正常,hidden=隐藏"
                 },
                 "weigh": {
                     "type": "int",
@@ -997,12 +997,12 @@
                     "comment": "排序"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 },
                 "updatetime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "更新时间"
                 }
@@ -1041,7 +1041,7 @@
                     "comment": "标签ID"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 }
@@ -1383,12 +1383,12 @@
                     "type": "enum('shipping','billing')",
                     "null": false,
                     "default": "shipping",
-                    "comment": "地址类型"
+                    "comment": "地址类型:shipping=收货地址,billing=账单地址"
                 },
                 "is_default": {
-                    "type": "tinyint(1)",
+                    "type": "int",
                     "null": false,
-                    "default": "0",
+                    "default": 0,
                     "comment": "是否默认地址（同用户同类型仅允许1个默认，事务保证）"
                 },
                 "first_name": {
@@ -1467,23 +1467,24 @@
                     "comment": "运费/配送区标识（预留）"
                 },
                 "is_shippable": {
-                    "type": "tinyint(1)",
+                    "type": "int",
                     "null": false,
-                    "default": "1",
+                    "default": 1,
                     "comment": "是否可配送（预留边界）"
                 },
-                "deleted_at": {
-                    "type": "int",
+                "deletetime": {
+                    "type": "bigint",
                     "null": true,
-                    "comment": "软删除时间戳（NULL=未删除）"
+                    "default": null,
+                    "comment": "删除时间（NULL=未删除）"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间"
                 },
                 "updatetime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "更新时间"
                 }
@@ -1497,18 +1498,18 @@
                 ],
                 "idx_user_active": [
                     "user_id",
-                    "deleted_at"
+                    "deletetime"
                 ],
                 "idx_user_type_active": [
                     "user_id",
                     "address_type",
-                    "deleted_at"
+                    "deletetime"
                 ],
                 "idx_user_type_default": [
                     "user_id",
                     "address_type",
                     "is_default",
-                    "deleted_at"
+                    "deletetime"
                 ]
             },
             "engine": "InnoDB",
@@ -1543,7 +1544,7 @@
                     "type": "enum('shipping','billing')",
                     "null": false,
                     "default": "shipping",
-                    "comment": "快照类型"
+                    "comment": "快照类型:shipping=收货地址,billing=账单地址"
                 },
                 "first_name": {
                     "type": "varchar(50)",
@@ -1621,13 +1622,13 @@
                     "comment": "运费/配送区标识（预留）"
                 },
                 "is_shippable": {
-                    "type": "tinyint(1)",
+                    "type": "int",
                     "null": false,
-                    "default": "1",
+                    "default": 1,
                     "comment": "是否可配送（快照）"
                 },
                 "createtime": {
-                    "type": "int",
+                    "type": "bigint",
                     "null": true,
                     "comment": "创建时间（快照生成时间）"
                 }

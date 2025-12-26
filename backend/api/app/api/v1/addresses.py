@@ -44,7 +44,7 @@ def ensure_default_address_exists(
     conditions = [
         addresses_table.c.user_id == user_id,
         addresses_table.c.address_type == address_type,
-        addresses_table.c.deleted_at.is_(None)
+        addresses_table.c.deletetime.is_(None)
     ]
     if exclude_address_id:
         conditions.append(addresses_table.c.id != exclude_address_id)
@@ -102,7 +102,7 @@ def set_default_address(
             and_(
                 addresses_table.c.id == address_id,
                 addresses_table.c.user_id == user_id,
-                addresses_table.c.deleted_at.is_(None)
+                addresses_table.c.deletetime.is_(None)
             )
         )
     )
@@ -122,7 +122,7 @@ def set_default_address(
             and_(
                 addresses_table.c.user_id == user_id,
                 addresses_table.c.address_type == address_type,
-                addresses_table.c.deleted_at.is_(None)
+                addresses_table.c.deletetime.is_(None)
             )
         )
         .with_for_update()
@@ -157,7 +157,7 @@ async def get_addresses(
     """
     获取当前用户的地址列表（带缓存）
     
-    - 只返回未删除的地址（deleted_at IS NULL）
+    - 只返回未删除的地址（deletetime IS NULL）
     - 默认地址优先排序
     - 可选的 address_type 过滤（shipping/billing）
     - Cache-Aside 模式：先查缓存，miss 则查DB并回填
@@ -167,7 +167,7 @@ async def get_addresses(
     # 1. 先尝试从缓存获取
     cached_list = AddressCache.get_address_list(user_id, address_type)
     if cached_list is not None:
-        # 缓存命中，直接返回
+        # 缓存命中，直接返回（缓存中的数据已经是转换后的格式）
         return AddressListResponse(
             addresses=[AddressResponse(**addr) for addr in cached_list],
             total=len(cached_list)
@@ -179,7 +179,7 @@ async def get_addresses(
     # 构建查询条件
     conditions = [
         addresses_table.c.user_id == user_id,
-        addresses_table.c.deleted_at.is_(None)
+        addresses_table.c.deletetime.is_(None)
     ]
     
     if address_type:
@@ -203,6 +203,11 @@ async def get_addresses(
     address_dict_list = []
     for addr in addresses:
         addr_dict = dict(addr._mapping)
+        # 转换 int (0/1) 为 bool
+        if 'is_default' in addr_dict:
+            addr_dict['is_default'] = bool(addr_dict['is_default'])
+        if 'is_shippable' in addr_dict:
+            addr_dict['is_shippable'] = bool(addr_dict['is_shippable'])
         address_list.append(AddressResponse(**addr_dict))
         address_dict_list.append(addr_dict)
     
@@ -232,7 +237,7 @@ async def get_address(
     # 1. 先尝试从缓存获取
     cached_address = AddressCache.get_address_detail(user_id, address_id)
     if cached_address is not None:
-        # 缓存命中，直接返回
+        # 缓存命中，直接返回（缓存中的数据已经是转换后的格式）
         return AddressResponse(**cached_address)
     
     # 2. 缓存未命中，查询数据库
@@ -244,7 +249,7 @@ async def get_address(
             and_(
                 addresses_table.c.id == address_id,
                 addresses_table.c.user_id == user_id,
-                addresses_table.c.deleted_at.is_(None)
+                addresses_table.c.deletetime.is_(None)
             )
         )
     )
@@ -290,7 +295,7 @@ async def create_address(
             and_(
                 addresses_table.c.user_id == user_id,
                 addresses_table.c.address_type == request.address_type,
-                addresses_table.c.deleted_at.is_(None)
+                addresses_table.c.deletetime.is_(None)
             )
         )
     )
@@ -333,7 +338,7 @@ async def create_address(
     
     # 如果需要设为默认，先执行默认地址设置流程
     if is_default:
-        # 先插入地址（is_default=0），然后调用设置默认函数
+        # 先插入地址（is_default 已在 insert_data 中设置），然后调用设置默认函数确保事务一致性
         result = db.execute(
             addresses_table.insert().values(**insert_data)
         )
@@ -367,6 +372,12 @@ async def create_address(
     
     address_dict = dict(new_address._mapping)
     
+    # 转换 int (0/1) 为 bool
+    if 'is_default' in address_dict:
+        address_dict['is_default'] = bool(address_dict['is_default'])
+    if 'is_shippable' in address_dict:
+        address_dict['is_shippable'] = bool(address_dict['is_shippable'])
+    
     # 失效相关缓存（创建地址后）
     AddressCache.invalidate_user_addresses(user_id)
     
@@ -398,7 +409,7 @@ async def update_address(
             and_(
                 addresses_table.c.id == address_id,
                 addresses_table.c.user_id == user_id,
-                addresses_table.c.deleted_at.is_(None)
+                addresses_table.c.deletetime.is_(None)
             )
         )
     )
@@ -516,7 +527,7 @@ async def set_default(
             and_(
                 addresses_table.c.id == address_id,
                 addresses_table.c.user_id == user_id,
-                addresses_table.c.deleted_at.is_(None)
+                addresses_table.c.deletetime.is_(None)
             )
         )
     )
@@ -543,6 +554,12 @@ async def set_default(
     updated_address = result.fetchone()
     address_dict = dict(updated_address._mapping)
     
+    # 转换 int (0/1) 为 bool
+    if 'is_default' in address_dict:
+        address_dict['is_default'] = bool(address_dict['is_default'])
+    if 'is_shippable' in address_dict:
+        address_dict['is_shippable'] = bool(address_dict['is_shippable'])
+    
     # 失效相关缓存（设置默认地址后）
     AddressCache.invalidate_user_addresses(user_id)
     
@@ -560,7 +577,7 @@ async def delete_address(
     删除地址（软删除）
     
     - 权限校验：只能删除自己的地址
-    - 软删除：设置 deleted_at 时间戳
+    - 软删除：设置 deletetime 时间戳
     - 默认地址检查：
       - 如果删除的是默认地址，且同类型还有其他地址，自动设置第一个为默认
       - 如果删除后没有地址了，允许没有默认地址（合理）
@@ -576,7 +593,7 @@ async def delete_address(
             and_(
                 addresses_table.c.id == address_id,
                 addresses_table.c.user_id == user_id,
-                addresses_table.c.deleted_at.is_(None)
+                addresses_table.c.deletetime.is_(None)
             )
         )
     )
@@ -597,7 +614,7 @@ async def delete_address(
     db.execute(
         addresses_table.update()
         .where(addresses_table.c.id == address_id)
-        .values(deleted_at=now_timestamp, updatetime=now_timestamp)
+        .values(deletetime=now_timestamp, updatetime=now_timestamp)
     )
     
     # 如果删除的是默认地址，检查是否需要设置其他地址为默认
