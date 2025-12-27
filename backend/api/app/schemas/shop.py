@@ -41,4 +41,21 @@ class WheelsListResponse(BaseModel):
     page_size: int = 20
 
 
+class BrandResponse(BaseModel):
+    """品牌响应"""
+    id: int
+    name: str
+    slug: Optional[str] = None
+    logo: Optional[str] = None
+    description: Optional[str] = None
+    status: str
+    weigh: int = 0
+
+
+class BrandsListResponse(BaseModel):
+    """品牌列表响应"""
+    brands: List[BrandResponse] = Field(default_factory=list)
+    total: int = 0
+
+
 

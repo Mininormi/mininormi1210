@@ -100,19 +100,74 @@ AddressCache.invalidate_user_addresses(user_id)
 3. **缓存穿透防护**：如果数据库查询结果为空，也应该缓存（缓存空结果，避免频繁查询数据库）
 4. **缓存雪崩防护**：TTL 可以添加随机抖动（当前未实现，可后续优化）
 
+## 公共缓存（DB=1）使用指南
+
+### 用途
+公共缓存用于存储 Web 和小程序游客可访问的公共数据，无需登录即可访问。
+
+### 适用场景
+- 品牌列表（Featured Brands）
+- 车型数据（Year/Make/Model）
+- 商品筛选条件
+- 首页推荐数据
+- 其他公开的、访问频率高的数据
+
+### Key 命名规范
+```
+publiccache:{cache_type}:v{version}:{identifier}
+```
+
+### 使用示例
+```python
+from app.core.public_cache_client import public_cache_client
+import json
+
+# 获取品牌列表（带缓存）
+def get_brands_cached():
+    version = public_cache_client.get_version("brands")
+    key = f"publiccache:brands:v{version}:list"
+    
+    cached = public_cache_client.get(key)
+    if cached:
+        return json.loads(cached)
+    
+    # 缓存未命中，查询数据库
+    brands = db.query(...)
+    
+    # 回填缓存
+    public_cache_client.set(key, json.dumps(brands), ttl=3600)
+    return brands
+
+# 失效品牌缓存（当品牌数据更新时）
+def invalidate_brands_cache():
+    public_cache_client.bump_version("brands")
+```
+
+### TTL 设置
+- **默认 TTL**：3600 秒（1小时）
+- **版本号 TTL**：7 天
+
 ## 监控和调试
 
 ### Redis Commander
 访问 `http://localhost:8083` 可以查看 Redis 数据：
-- 选择 `usercache` 连接（DB=3）
+- 选择 `publiccache` 连接（DB=1）- 公共缓存
+- 选择 `usercache` 连接（DB=3）- 用户缓存
+- 选择 `verification` 连接（DB=10）- 验证码
+- 选择 `local` 连接（DB=0）- 认证相关
 - 查看缓存 key 和值
 - 监控缓存命中率
 
 ### 健康检查
 ```python
+from app.core.public_cache_client import public_cache_client
 from app.core.usercache_client import usercache_client
 
-# 检查连接
+# 检查公共缓存连接
+if public_cache_client.ping():
+    print("公共缓存 Redis 连接正常")
+
+# 检查用户缓存连接
 if usercache_client.ping():
     print("用户缓存 Redis 连接正常")
 ```

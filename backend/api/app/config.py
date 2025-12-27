@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     REDIS_DB: int = 0  # Token 专用数据库（DB=0）
     REDIS_DECODE_RESPONSES: bool = True
     
+    # Redis 公共缓存配置（DB=1：Web和小程序游客可访问的公共数据，如品牌列表、车型数据等）
+    REDIS_PUBLIC_DB: int = 1
+    REDIS_PUBLIC_TTL: int = 3600  # 公共缓存默认TTL（1小时）
+    
     # Redis 用户缓存配置（DB=3：地址、订单、物流等用户访问缓存）
     REDIS_USERCACHE_DB: int = 3
     REDIS_USERCACHE_TTL: int = 1800  # 用户缓存默认TTL（30分钟）

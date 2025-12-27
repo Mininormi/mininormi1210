@@ -45,6 +45,21 @@ export interface GetWheelsParams {
   page_size?: number
 }
 
+export interface Brand {
+  id: number
+  name: string
+  slug: string | null
+  logo: string | null
+  description: string | null
+  status: string
+  weigh: number
+}
+
+export interface BrandsListResponse {
+  brands: Brand[]
+  total: number
+}
+
 /**
  * 获取轮毂商品列表
  */
@@ -69,6 +84,13 @@ export async function getWheels(params: GetWheelsParams = {}): Promise<WheelsLis
   
   const queryString = searchParams.toString()
   return apiClient.get<WheelsListResponse>(`/shop/wheels${queryString ? `?${queryString}` : ''}`)
+}
+
+/**
+ * 获取品牌列表（Featured Brands）
+ */
+export async function getBrands(): Promise<BrandsListResponse> {
+  return apiClient.get<BrandsListResponse>('/shop/brands')
 }
 
 

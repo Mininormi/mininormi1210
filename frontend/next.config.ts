@@ -13,6 +13,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cdn-icons-png.freepik.com',
       },
+
+      // Cloudflare R2 CDN 域名（品牌Logo）
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pub-46d013ef97df4875bc41b321f1dc1294.r2.dev',
+      },
     ],
   },
   

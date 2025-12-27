@@ -8,7 +8,9 @@ from sqlalchemy import select, and_, or_, func, distinct
 from typing import Optional, List
 from decimal import Decimal
 from app.database import get_db, get_table
-from app.schemas.shop import WheelsListResponse, WheelProductResponse, WheelSpecResponse
+from app.schemas.shop import WheelsListResponse, WheelProductResponse, WheelSpecResponse, BrandsListResponse, BrandResponse
+from app.core.public_cache_client import public_cache_client
+import json
 
 router = APIRouter()
 
@@ -227,6 +229,69 @@ async def get_wheels(
         page=page,
         page_size=page_size,
     )
+
+
+@router.get("/brands", response_model=BrandsListResponse, summary="获取品牌列表（Featured Brands）")
+async def get_brands(
+    db: Session = Depends(get_db)
+):
+    """
+    获取品牌列表（Featured Brands）
+    
+    - 游客可访问，无需鉴权
+    - 只返回状态为 normal 的品牌
+    - 按 weigh 降序排序（权重高的在前）
+    - 使用 Redis 公共缓存（DB=1），TTL 1小时
+    """
+    # 1. 先尝试从缓存获取
+    version = public_cache_client.get_version("brands")
+    cache_key = f"publiccache:brands:v{version}:list"
+    
+    cached_data = public_cache_client.get(cache_key)
+    if cached_data:
+        try:
+            cached_brands = json.loads(cached_data)
+            return BrandsListResponse(**cached_brands)
+        except Exception:
+            # 缓存数据格式错误，继续查询数据库
+            pass
+    
+    # 2. 缓存未命中，查询数据库
+    brands_table = get_table("mini_wheel_brand")
+    
+    result = db.execute(
+        select(brands_table)
+        .where(brands_table.c.status == "normal")
+        .order_by(brands_table.c.weigh.desc(), brands_table.c.createtime.desc())
+    )
+    brands_rows = result.fetchall()
+    
+    # 3. 转换为响应格式
+    brands = []
+    for brand_row in brands_rows:
+        brand_dict = dict(brand_row._mapping)
+        brands.append(BrandResponse(
+            id=brand_dict["id"],
+            name=brand_dict["name"],
+            slug=brand_dict.get("slug"),
+            logo=brand_dict.get("logo"),
+            description=brand_dict.get("description"),
+            status=brand_dict["status"],
+            weigh=brand_dict.get("weigh", 0),
+        ))
+    
+    # 4. 回填缓存
+    response_data = BrandsListResponse(
+        brands=brands,
+        total=len(brands)
+    )
+    public_cache_client.set(
+        cache_key,
+        json.dumps(response_data.model_dump(), ensure_ascii=False),
+        ttl=3600  # 1小时TTL
+    )
+    
+    return response_data
 
 
 
