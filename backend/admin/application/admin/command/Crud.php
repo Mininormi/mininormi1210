@@ -906,7 +906,13 @@ class Crud extends Command
                             $selectpageField = '';
                             foreach ($relations as $index => $relation) {
                                 if ($relation['relationForeignKey'] === $field) {
-                                    $selectpageTable = substr($relation['relationTableName'], strlen($prefix));
+                                    // 修复：只有当表名确实以 prefix 开头时才截断，否则保持原样
+                                    // 避免将 mini_wheel_brand 错误截断成 i_wheel_brand
+                                    if ($prefix && strpos($relation['relationTableName'], $prefix) === 0) {
+                                        $selectpageTable = substr($relation['relationTableName'], strlen($prefix));
+                                    } else {
+                                        $selectpageTable = $relation['relationTableName'];
+                                    }
                                     break;
                                 }
                             }
