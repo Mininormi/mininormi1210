@@ -70,4 +70,8 @@ class Spec extends Model
 
 
 
+    public function product()
+    {
+        return $this->belongsTo('app\admin\model\mini\wheel\Product', 'product_id', 'id', [], 'LEFT')->setEagerlyType(0);
+    }
 }
