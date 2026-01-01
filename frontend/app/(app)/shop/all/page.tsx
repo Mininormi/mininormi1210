@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getWheels, getWheelsByVehicle, type WheelProduct } from '@/lib/api/shop'
+import { getWheelsByVehicle, type WheelProduct } from '@/lib/api/shop'
 import { getFitment, type Fitment } from '@/lib/api/vehicles'
 
 function AllWheelsContent() {
@@ -50,30 +50,21 @@ function AllWheelsContent() {
     const loadWheels = async () => {
       setLoading(true)
       try {
-        let response
-        
-        // 如果有 vehicle_id，使用新的 by-vehicle API（路线A：数值匹配）
-        if (vehicleId) {
-          response = await getWheelsByVehicle({
-            vehicle_id: vehicleId,
-            axle: 'both', // 前后轮都匹配
-            diameter: selectedDiameter || undefined,
-            page,
-            page_size: pageSize,
-          })
-        } else {
-          // 没有 vehicle_id，使用旧的通用 API
-          const params: any = {
-            page,
-            page_size: pageSize,
-          }
-          
-          if (selectedDiameter) {
-            params.diameter = selectedDiameter
-          }
-          
-          response = await getWheels(params)
+        // 必须提供 vehicle_id 才能查询
+        if (!vehicleId) {
+          setWheels([])
+          setTotal(0)
+          setLoading(false)
+          return
         }
+        
+        const response = await getWheelsByVehicle({
+          vehicle_id: vehicleId,
+          axle: 'both', // 前后轮都匹配
+          diameter: selectedDiameter || undefined,
+          page,
+          page_size: pageSize,
+        })
         
         setWheels(response.items)
         setTotal(response.total)

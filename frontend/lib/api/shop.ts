@@ -38,14 +38,6 @@ export interface WheelsListResponse {
   page_size: number
 }
 
-export interface GetWheelsParams {
-  vehicle_id?: string
-  pcd?: string
-  diameter?: number
-  page?: number
-  page_size?: number
-}
-
 export interface GetWheelsByVehicleParams {
   vehicle_id: string
   axle?: 'front' | 'rear' | 'both'
@@ -68,32 +60,6 @@ export interface Brand {
 export interface BrandsListResponse {
   brands: Brand[]
   total: number
-}
-
-/**
- * 获取轮毂商品列表
- */
-export async function getWheels(params: GetWheelsParams = {}): Promise<WheelsListResponse> {
-  const searchParams = new URLSearchParams()
-  
-  if (params.vehicle_id) {
-    searchParams.append('vehicle_id', params.vehicle_id)
-  }
-  if (params.pcd) {
-    searchParams.append('pcd', params.pcd)
-  }
-  if (params.diameter) {
-    searchParams.append('diameter', params.diameter.toString())
-  }
-  if (params.page) {
-    searchParams.append('page', params.page.toString())
-  }
-  if (params.page_size) {
-    searchParams.append('page_size', params.page_size.toString())
-  }
-  
-  const queryString = searchParams.toString()
-  return apiClient.get<WheelsListResponse>(`/shop/wheels${queryString ? `?${queryString}` : ''}`)
 }
 
 /**
