@@ -14,7 +14,8 @@ class WheelSpecResponse(BaseModel):
     pcd: Optional[str] = None
     offset: Optional[str] = None
     center_bore: Optional[str] = None
-    price: Optional[float] = None
+    price: Optional[float] = None  # sale_price
+    original_price: Optional[float] = None  # original_price
     stock: int = 0
 
 

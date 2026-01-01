@@ -13,6 +13,7 @@ export interface WheelSpec {
   offset: string | null
   center_bore: string | null
   price: number | null
+  original_price: number | null
   stock: number
 }
 
@@ -41,6 +42,15 @@ export interface GetWheelsParams {
   vehicle_id?: string
   pcd?: string
   diameter?: number
+  page?: number
+  page_size?: number
+}
+
+export interface GetWheelsByVehicleParams {
+  vehicle_id: string
+  axle?: 'front' | 'rear' | 'both'
+  diameter?: number
+  brand_id?: number
   page?: number
   page_size?: number
 }
@@ -91,6 +101,33 @@ export async function getWheels(params: GetWheelsParams = {}): Promise<WheelsLis
  */
 export async function getBrands(): Promise<BrandsListResponse> {
   return apiClient.get<BrandsListResponse>('/shop/brands')
+}
+
+/**
+ * 根据车辆ID获取匹配的轮毂商品（路线A：使用数值匹配 pcd_lugs + pcd_mm）
+ */
+export async function getWheelsByVehicle(params: GetWheelsByVehicleParams): Promise<WheelsListResponse> {
+  const searchParams = new URLSearchParams()
+  
+  searchParams.append('vehicle_id', params.vehicle_id)
+  
+  if (params.axle) {
+    searchParams.append('axle', params.axle)
+  }
+  if (params.diameter) {
+    searchParams.append('diameter', params.diameter.toString())
+  }
+  if (params.brand_id) {
+    searchParams.append('brand_id', params.brand_id.toString())
+  }
+  if (params.page) {
+    searchParams.append('page', params.page.toString())
+  }
+  if (params.page_size) {
+    searchParams.append('page_size', params.page_size.toString())
+  }
+  
+  return apiClient.get<WheelsListResponse>(`/shop/wheels/by-vehicle?${searchParams.toString()}`)
 }
 
 
